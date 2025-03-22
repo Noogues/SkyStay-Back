@@ -14,7 +14,7 @@ public class Flight {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false, unique = true)
-    private BigInteger id;
+    private Long id;
 
     @Column(name = "code", nullable = false, length = 20, unique = true)
     private String code;

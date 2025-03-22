@@ -15,7 +15,7 @@ public class Airplane {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false, unique = true)
-    private BigInteger id;
+    private Long id;
 
     @Column(name = "model", nullable = false, length = 100)
     private String model;

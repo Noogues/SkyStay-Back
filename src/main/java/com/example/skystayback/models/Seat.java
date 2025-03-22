@@ -14,7 +14,7 @@ public class Seat {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false, unique = true)
-    private BigInteger id;
+    private Long id;
 
     @Column(name = "seat_row", nullable = false, length = 10, unique = true)
     private String seat_row;

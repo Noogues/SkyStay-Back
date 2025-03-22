@@ -13,8 +13,7 @@ public class HotelRating {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false, unique = true)
-    private BigInteger id;
-
+    private Long id;
 
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
@@ -26,8 +25,5 @@ public class HotelRating {
 
     @Column(name = "rating", nullable = false, scale = 2)
     private Float rating;
-
-
-
 
 }
