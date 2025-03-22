@@ -25,7 +25,6 @@ public class User implements UserDetails {
     @Column(name = "id")
     private Long id;
 
-
     @Column(name = "user_code", nullable = false, length = 16)
     private String userCode;
 
@@ -39,7 +38,6 @@ public class User implements UserDetails {
     private String email;
 
     @Column(name = "birth_date", nullable = false)
-    @Temporal(TemporalType.DATE)
     private Date birthDate;
 
     @Column(name = "nif", nullable = false, length = 50)

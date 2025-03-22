@@ -1,0 +1,41 @@
+package com.example.skystayback.models;
+
+import jakarta.persistence.*;
+import lombok.Data;
+import java.math.BigInteger;
+
+@Data
+@Entity
+@Table(name = "hotel")
+public class Hotel {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false, unique = true)
+    private BigInteger id;
+
+    @Column(name = "name", nullable = false, length = 80)
+    private String name;
+
+    @Column(name = "address", nullable = false)
+    private String address;
+
+    @Column(name = "postal_code", nullable = false, length = 10)
+    private String postal_code;
+
+    @Column(name = "email", nullable = false, length = 60)
+    private String email;
+
+    @Column(name = "website", nullable = false, length = 120)
+    private String website;
+
+    @Column(name = "stars", nullable = false)
+    private Integer stars;
+
+    @Column(name = "description", nullable = false)
+    private String description;
+
+    @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+    @JoinColumn(name = "city_id")
+    private City city;
+}
