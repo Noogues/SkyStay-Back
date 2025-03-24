@@ -53,8 +53,8 @@ jobs:
       - name: Package the Spring Boot app
         run: mvn spring-boot:repackage
 
-      - name: Upload JAR artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: spring-boot-app
-          path: target/*.jar
+        - name: Upload JAR artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: spring-boot-app
+        path: target/*.jar
