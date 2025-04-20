@@ -17,6 +17,9 @@ public class Airplane {
     @Column(name = "id", nullable = false, unique = true)
     private Long id;
 
+    @Column(name = "code", nullable = false, length = 16, unique = true)
+    private String code;
+
     @Column(name = "model", nullable = false, length = 100)
     private String model;
 

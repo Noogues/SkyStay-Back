@@ -32,8 +32,7 @@ public class Airline {
     @Column(name = "website", nullable = false)
     private String website;
 
-    @Column(name = "iata_code", nullable = false, length = 3, unique = true)
-    private String iataCode;
+
 
 
 }

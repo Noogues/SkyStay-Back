@@ -7,7 +7,7 @@ import java.math.BigInteger;
 
 @Data
 @Entity
-@Table(name = "airline_rating")
+@Table(name = "apartment_rating")
 public class ApartmentRating {
 
     @Id

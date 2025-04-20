@@ -19,8 +19,11 @@ public class Airport {
     @Column(name = "name", nullable = false, length = 100)
     private String name;
 
-    @Column(name = "code", nullable = false, length = 10, unique = true)
+    @Column(name = "code", nullable = false, length = 16, unique = true)
     private String code;
+
+    @Column(name = "iata_code", nullable = false, length = 3, unique = true)
+    private String iataCode;
 
     @Column(name = "description", nullable = false)
     private String description;
