@@ -1,16 +1,17 @@
 package com.example.skystayback.controllers;
 
-import com.example.skystayback.dtos.AuthenticationDTO;
-import com.example.skystayback.dtos.UserLoginDTO;
-import com.example.skystayback.dtos.UserRegisterDTO;
+import com.example.skystayback.dtos.AuthenticationVO;
+import com.example.skystayback.dtos.common.ResponseVO;
+import com.example.skystayback.dtos.UserLoginVO;
+import com.example.skystayback.dtos.UserRegisterVO;
+import com.example.skystayback.dtos.common.TokenDecodeVO;
 import com.example.skystayback.services.UserService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/auth")
 public class UserController {
 
     private final UserService userService;
@@ -21,14 +22,17 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationDTO> register(@RequestBody UserRegisterDTO userDTO) {
-        AuthenticationDTO authDTO = userService.register(userDTO);
-        return ResponseEntity.ok(authDTO);
+    public ResponseVO<AuthenticationVO> register(@RequestBody UserRegisterVO userDTO) {
+        return userService.register(userDTO);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthenticationDTO> login(@RequestBody UserLoginDTO userDTO) {
-        AuthenticationDTO authDTO = userService.login(userDTO);
-        return ResponseEntity.ok(authDTO);
+    public ResponseVO<AuthenticationVO> login(@RequestBody UserLoginVO userDTO) {
+        return userService.login(userDTO);
+    }
+
+    @GetMapping("/decode-token")
+    public ResponseVO<TokenDecodeVO> decodeToken(@RequestHeader("Authorization") String token) {
+        return userService.decodeToken(token);
     }
 }
