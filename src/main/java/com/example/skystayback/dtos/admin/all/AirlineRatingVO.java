@@ -1,4 +1,4 @@
-package com.example.skystayback.dtos;
+package com.example.skystayback.dtos.admin.all;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,9 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserLoginDTO {
-
-    private String email;
-    private String password;
-
+public class AirlineRatingVO {
+    private String airlineName;
+    private Float rating;
 }

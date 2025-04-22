@@ -16,6 +16,9 @@ public class UserTicket {
     @Column(name = "id", nullable = false, unique = true)
     private Long id;
 
+    @Column(name = "code", nullable = false, length = 16, unique = true)
+    private String code;
+
     @Column(name = "name", nullable = false, length = 100, unique = true)
     private String name;
 

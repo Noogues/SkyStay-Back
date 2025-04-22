@@ -1,5 +1,6 @@
 package com.example.skystayback.security;
 
+import com.example.skystayback.models.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -7,6 +8,8 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -26,14 +29,18 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
+    public String extractUserRole(String token) {
+        return extractClaim(token, claims -> claims.get("rol", String.class));
+    }
+
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
 
-    public String generateToken(UserDetails userDetails, Long userId, String rol) {
+    public String generateToken(UserDetails userDetails, String userCode, String rol) {
         Map<String, Object> extraClaims = new HashMap<>();
-        extraClaims.put("userId", userId);
+        extraClaims.put("userCode", userCode);
         extraClaims.put("rol", rol);
         return generateToken(extraClaims, userDetails);
     }

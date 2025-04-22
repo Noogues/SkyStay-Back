@@ -1,4 +1,4 @@
-package com.example.skystayback.dtos;
+package com.example.skystayback.dtos.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,9 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthenticationRequestDTO {
-
-    String username;
-    String password;
-
+public class TokenDecodeVO {
+    private String name;
+    private String role;
 }

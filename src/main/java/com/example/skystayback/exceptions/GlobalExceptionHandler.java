@@ -1,6 +1,6 @@
 package com.example.skystayback.exceptions;
 
-import com.example.skystayback.dtos.ErrorResponseDTO;
+import com.example.skystayback.dtos.ErrorResponseVO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -13,8 +13,8 @@ import java.time.LocalDateTime;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ApiException.class)
-    public ResponseEntity<ErrorResponseDTO> handleApiException(ApiException ex) {
-        ErrorResponseDTO errorResponse = ErrorResponseDTO.builder()
+    public ResponseEntity<ErrorResponseVO> handleApiException(ApiException ex) {
+        ErrorResponseVO errorResponse = ErrorResponseVO.builder()
                 .title(ex.getTitle())
                 .message(ex.getMessage())
                 .errorCode(ex.getErrorCode())
@@ -25,8 +25,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(UsernameNotFoundException.class)
-    public ResponseEntity<ErrorResponseDTO> handleUsernameNotFoundException(UsernameNotFoundException ex) {
-        ErrorResponseDTO errorResponse = ErrorResponseDTO.builder()
+    public ResponseEntity<ErrorResponseVO> handleUsernameNotFoundException(UsernameNotFoundException ex) {
+        ErrorResponseVO errorResponse = ErrorResponseVO.builder()
                 .title("Usuario no encontrado")
                 .message(ex.getMessage())
                 .errorCode("USER_NOT_FOUND")
