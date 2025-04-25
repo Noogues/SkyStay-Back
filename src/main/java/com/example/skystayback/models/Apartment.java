@@ -30,7 +30,6 @@ public class Apartment {
     @Column(name = "phone_number", nullable = false, length = 20)
     private String phone_number;
 
-
     @Column(name = "email", nullable = false, length = 60)
     private String email;
 
