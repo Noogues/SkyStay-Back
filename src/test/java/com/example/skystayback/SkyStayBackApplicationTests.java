@@ -1,7 +1,6 @@
 package com.example.skystayback;
 
 import com.example.skystayback.repositories.UserRepository;
-import com.example.skystayback.services.AdminService;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -16,8 +15,6 @@ class SkyStayBackApplicationTests {
     @Mock
     private UserRepository userRepository;
 
-    @InjectMocks
-    private AdminService adminService;
 
     @BeforeEach
     public void setUp() {
