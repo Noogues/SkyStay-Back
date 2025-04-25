@@ -1,6 +1,6 @@
 package com.example.skystayback.exceptions;
 
-import com.example.skystayback.dtos.ErrorResponseVO;
+import com.example.skystayback.dtos.common.ErrorResponseVO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
