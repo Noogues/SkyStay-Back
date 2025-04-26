@@ -1,7 +1,12 @@
 package com.example.skystayback.repositories;
 
+import com.example.skystayback.dtos.user.*;
 import com.example.skystayback.models.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -17,5 +22,27 @@ public interface UserRepository  extends JpaRepository<User, Long> {
     boolean existsByPhone(String phone);
 
     User getUserByUserCode(String userCode);
+
+    //CONSULTAS DE LA ADMINISTRACION
+    @Query("SELECT new com.example.skystayback.dtos.user.UserAdminVO(u.userCode, u.name, u.lastName, u.email, u.nif, u.phone, u.rol) FROM User u")
+    Page<UserAdminVO> getAllUsers(Pageable pageable);
+
+    @Query("SELECT new com.example.skystayback.dtos.user.AirlineRatingVO(a.name, ar.rating) FROM Airline a INNER JOIN AirlineRating ar ON ar.airline.id = a.id WHERE ar.user.userCode = :userCode")
+    Page<AirlineRatingVO> findAllAirlineRatingByUserId(@Param("userCode") String userCode, Pageable pageable);
+
+    @Query("SELECT new com.example.skystayback.dtos.user.ApartmentRatingVO(a.name, ar.rating) FROM Apartment a LEFT JOIN ApartmentRating ar ON ar.apartment.id = a.id WHERE ar.user.userCode = :userCode")
+    Page<ApartmentRatingVO> findAllApartmentRatingByUserId(@Param("userCode") String userCode, Pageable pageable);
+
+    @Query("SELECT new com.example.skystayback.dtos.user.HotelRatingVO(h.name, hr.rating) FROM Hotel h LEFT JOIN HotelRating hr ON hr.hotel.id = h.id WHERE hr.user.userCode = :userCode")
+    Page<HotelRatingVO> findAllHotelRatingByUserId(@Param("userCode") String userCode, Pageable pageable);
+
+    @Query("SELECT new com.example.skystayback.dtos.user.OrderApartmentVO(a.name, oa.code, oa.amount, oa.discount, oa.status, oa.bill) FROM Apartment a INNER JOIN OrderApartment oa ON oa.apartment.id = a.id WHERE oa.user.userCode = :userCode")
+    Page<OrderApartmentVO> findAllOrderApartmentByUserId(@Param("userCode") String userCode, Pageable pageable);
+
+    @Query("SELECT new com.example.skystayback.dtos.user.OrderFlightVO(f.code, o.code, o.amount, o.discount, o.status, o.bill) FROM Flight f INNER JOIN OrderFlight o ON o.flight.id = f.id WHERE o.user.userCode = :userCode")
+    Page<OrderFlightVO> findAllOrderFlightByUserId(@Param("userCode") String userCode, Pageable pageable);
+
+    @Query("SELECT new com.example.skystayback.dtos.user.OrderHotelVO(h.name, oh.code, oh.amount, oh.discount, oh.status, oh.bill) FROM Hotel h INNER JOIN OrderHotel oh ON oh.room.hotel.id = h.id WHERE oh.user.userCode = :userCode")
+    Page<OrderHotelVO> findAllOrderHotelByUserId(@Param("userCode") String userCode, Pageable pageable);
 }
 

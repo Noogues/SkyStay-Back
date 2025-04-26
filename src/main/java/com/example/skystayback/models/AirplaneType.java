@@ -1,9 +1,10 @@
 package com.example.skystayback.models;
 
-import com.example.skystayback.enums.AirplaneConfiguration;
 import jakarta.persistence.*;
 import lombok.Data;
-import java.math.BigInteger;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Entity
@@ -12,15 +13,25 @@ public class AirplaneType {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false, unique = true)
     private Long id;
 
+    // Este campo de aqui es el codigo de identificacion autogenerado.
+    @Column(name = "code", nullable = false, length = 16, unique = true)
+    private String code;
 
-    @Column(name = "name", nullable = false, length = 100)
+    // Este campo de aqui es el codigo del avion: Ej. 320, 737,
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "configuration", nullable = false, length = 100)
-    @Enumerated(EnumType.ORDINAL)
-    private AirplaneConfiguration configuration;
+    @Column(name = "manufacturer", nullable = false)
+    private String manufacturer;
+
+    @Column(name = "capacity", nullable = false)
+    private Integer capacity;
+
+    @OneToMany(mappedBy = "airplaneType")
+    private List<Airplane> airplanes = new ArrayList<>();
+
+
 
 }

@@ -1,6 +1,5 @@
 package com.example.skystayback.services;
 
-import com.example.skystayback.dtos.*;
 import com.example.skystayback.dtos.common.*;
 import com.example.skystayback.enums.UserRol;
 import com.example.skystayback.exceptions.ApiException;
@@ -153,21 +152,4 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public ResponseVO<UserInfoVO> getUserInfoByCode(String userCode){
-        try{
-            User user = userRepository.getUserByUserCode(userCode);
-            UserInfoVO userInfoVO = new UserInfoVO();
-            userInfoVO.setName(user.getName() + " " + user.getLastName());
-            // Quitar ROLE_ y ademas dejar solo en mayuscula la primera letra.
-            String rol = user.getRol().toString().toLowerCase().split("_")[1];
-            rol = Character.toUpperCase(rol.charAt(0)) + rol.substring(1);
-            userInfoVO.setRole(rol);
-            return ResponseVO.<UserInfoVO>builder()
-                    .response(new DataVO<>(userInfoVO))
-                    .messages(new MessageResponseVO("Información del usuario obtenida", 200, LocalDateTime.now()))
-                    .build();
-        }catch (Exception e){
-            return new ResponseVO<>(null, new MessageResponseVO("Error al intentar obtener la información del usuario", 400, LocalDateTime.now()));
-        }
-    }
 }
