@@ -1,4 +1,4 @@
-package com.example.skystayback.dtos;
+package com.example.skystayback.dtos.common;
 
 import lombok.*;
 
@@ -8,7 +8,7 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserRegisterDTO {
+public class UserRegisterVO {
 
     private String name;
     private String lastName;

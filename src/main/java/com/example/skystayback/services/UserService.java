@@ -1,8 +1,6 @@
 package com.example.skystayback.services;
 
-import com.example.skystayback.dtos.AuthenticationDTO;
-import com.example.skystayback.dtos.UserLoginDTO;
-import com.example.skystayback.dtos.UserRegisterDTO;
+import com.example.skystayback.dtos.common.*;
 import com.example.skystayback.enums.UserRol;
 import com.example.skystayback.exceptions.ApiException;
 import com.example.skystayback.models.User;
@@ -15,6 +13,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.UUID;
 
@@ -32,7 +32,7 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(()-> new UsernameNotFoundException("Usuario no encontrado"));
     }
 
-    public AuthenticationDTO register(UserRegisterDTO userDTO) {
+    public ResponseVO<AuthenticationVO> register(UserRegisterVO userDTO) {
 
         if (userRepository.existsByEmail(userDTO.getEmail())) {
             ErrorUtils.throwEmailExistsError();
@@ -55,12 +55,16 @@ public class UserService implements UserDetailsService {
         user.setGender(userDTO.getGender());
         user.setImg(userDTO.getImg());
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
-        user.setRol(UserRol.CLIENT);
+        user.setRol(UserRol.ROLE_CLIENT);
 
         userRepository.save(user);
 
-        var jwtToken = jwtService.generateToken(user, user.getId(), user.getRol().name());
-        return AuthenticationDTO.builder().token(jwtToken).build();
+        var jwtToken = jwtService.generateToken(user, user.getUserCode(), user.getRol().name());
+
+        return ResponseVO.<AuthenticationVO>builder()
+                .response(new DataVO<>(AuthenticationVO.builder().token(jwtToken).build()))
+                .messages(new MessageResponseVO("Registro exitoso", 200, LocalDateTime.now()))
+                .build();
     }
 
     private String generateUniqueUserCode() {
@@ -80,7 +84,7 @@ public class UserService implements UserDetailsService {
         return uniqueCode;
     }
 
-    private String generateShortUuid() {
+    public String generateShortUuid() {
         UUID uuid = UUID.randomUUID();
         byte[] uuidBytes = toBytes(uuid);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(uuidBytes).substring(0, 16);
@@ -97,7 +101,7 @@ public class UserService implements UserDetailsService {
         return buffer;
     }
 
-    public AuthenticationDTO login(UserLoginDTO userLoginDTO) {
+    public ResponseVO<AuthenticationVO> login(UserLoginVO userLoginDTO) {
         User user = userRepository.findTopByEmail(userLoginDTO.getEmail())
                 .orElseThrow(() -> new ApiException(
                         "Credenciales inválidas",
@@ -111,7 +115,41 @@ public class UserService implements UserDetailsService {
                     "INVALID_CREDENTIALS");
         }
 
-        String jwtToken = jwtService.generateToken(user, user.getId(), user.getRol().name());
-        return AuthenticationDTO.builder().token(jwtToken).build();
+        String jwtToken = jwtService.generateToken(user, user.getUserCode(), user.getRol().name());
+        return ResponseVO.<AuthenticationVO>builder()
+                .response(new DataVO<>(AuthenticationVO.builder().token(jwtToken).build()))
+                .messages(new MessageResponseVO("Inicio de sesión exitoso", 200, LocalDateTime.now()))
+                .build();
     }
+
+
+    public ResponseVO<TokenDecodeVO> decodeToken(String token) {
+        if (token == null || !token.startsWith("Bearer ")) {
+            return new ResponseVO<>(null, new MessageResponseVO("Token no proporcionado o inválido", 401, LocalDateTime.now()));
+        }
+        try{
+            String tokenWithoutBearer = token.replace("Bearer ", "");
+
+            String email = jwtService.extractUsername(tokenWithoutBearer);
+
+            User user = userRepository.findTopByEmail(email)
+                    .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+
+            String name = user.getName();
+            String rol = user.getRol().toString().split("_")[1];
+
+            new TokenDecodeVO();
+            TokenDecodeVO tokenDecodeVO = TokenDecodeVO.builder().name(name).role(rol).build();
+
+            return ResponseVO.<TokenDecodeVO>builder()
+                    .response(new DataVO<>(tokenDecodeVO))
+                    .messages(new MessageResponseVO("Token decodificado", 200, LocalDateTime.now()))
+                    .build();
+        }catch (UsernameNotFoundException e){
+            return new ResponseVO<>(null, new MessageResponseVO("Token inválido", 401, LocalDateTime.now()));
+        }catch (Exception e){
+            return new ResponseVO<>(null, new MessageResponseVO("Error al intentar descodificar el token:", 400, LocalDateTime.now()));
+        }
+    }
+
 }

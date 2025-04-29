@@ -8,7 +8,7 @@ import java.math.BigInteger;
 
 @Data
 @Entity
-@Table(name = "country")
+@Table(name = "seat")
 public class Seat {
 
     @Id
@@ -16,21 +16,17 @@ public class Seat {
     @Column(name = "id", nullable = false, unique = true)
     private Long id;
 
-    @Column(name = "seat_row", nullable = false, length = 10, unique = true)
-    private String seat_row;
+    @Column(name = "seat_row", nullable = false, length = 10)
+    private String seatRow;
 
-    @Column(name = "seat_column", nullable = false, length = 10, unique = true)
-    private String seat_column;
+    @Column(name = "seat_column", nullable = false, length = 10)
+    private String seatColumn;
 
-    @Column(name = "continent", nullable = false, length = 100)
-    private String continent;
-
-    @Column(name = "class", nullable = false, length = 100)
-    @Enumerated(EnumType.ORDINAL)
-    private SeatClass seat_class;
-
-    //True si esta ocupado, False si esta libre.
+    // True si está ocupado, false si está libre
     @Column(name = "state", nullable = false)
     private Boolean state;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "airplane_cabin_id", nullable = false)
+    private AirplaneCabin cabin;
 }

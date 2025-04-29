@@ -1,4 +1,4 @@
-package com.example.skystayback.dtos;
+package com.example.skystayback.dtos.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ErrorResponseDTO {
+public class ErrorResponseVO {
     private String title;
     private String message;
     private String errorCode;

@@ -27,5 +27,4 @@ public class City {
     @JoinColumn(name = "country_id")
     private Country country;
 
-
 }

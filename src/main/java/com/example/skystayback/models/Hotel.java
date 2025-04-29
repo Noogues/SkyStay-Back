@@ -14,6 +14,9 @@ public class Hotel {
     @Column(name = "id", nullable = false, unique = true)
     private Long id;
 
+    @Column(name = "code", nullable = false, length = 16)
+    private String code;
+
     @Column(name = "name", nullable = false, length = 80)
     private String name;
 
@@ -22,6 +25,9 @@ public class Hotel {
 
     @Column(name = "postal_code", nullable = false, length = 10)
     private String postal_code;
+
+    @Column(name = "phone_number", nullable = false, length = 20)
+    private String phone_number;
 
     @Column(name = "email", nullable = false, length = 60)
     private String email;

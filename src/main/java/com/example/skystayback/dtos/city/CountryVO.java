@@ -1,4 +1,4 @@
-package com.example.skystayback.dtos;
+package com.example.skystayback.dtos.city;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,9 +9,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthenticationRequestDTO {
-
-    String username;
-    String password;
-
+public class CountryVO {
+    private String name;
 }
