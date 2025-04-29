@@ -84,7 +84,7 @@ public class UserService implements UserDetailsService {
         return uniqueCode;
     }
 
-    private String generateShortUuid() {
+    public String generateShortUuid() {
         UUID uuid = UUID.randomUUID();
         byte[] uuidBytes = toBytes(uuid);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(uuidBytes).substring(0, 16);
