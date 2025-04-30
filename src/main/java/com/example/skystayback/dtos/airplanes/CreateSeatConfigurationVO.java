@@ -8,10 +8,10 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SeatConfigurationVO {
+public class CreateSeatConfigurationVO {
 
-    private Long id;
     private Integer totalRows;
     private SeatClass seatClass;
     private String seatPattern;
+    private String description;
 }

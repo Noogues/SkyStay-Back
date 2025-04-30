@@ -8,10 +8,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SeatConfigurationVO {
-
+public class AirplanesTypesVO {
     private Long id;
-    private Integer totalRows;
-    private SeatClass seatClass;
-    private String seatPattern;
+    private String name; // Este campo de aqui es el codigo del avion: Ej. 320, 737,
+    private String manufacturer;
+    private Integer capacity;
 }
