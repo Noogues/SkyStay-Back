@@ -10,10 +10,7 @@ import lombok.Data;
 public class AirplaneForm1VO {
 
     // Airplane_type:
-    private String code;
-    private String name; // Este campo de aqui es el codigo del avion: Ej. 320, 737,
-    private String manufacturer;
-    private Integer capacity;
+    private Long airplane_type_id;
 
 
     // Airplane (necesita airplane_type_id):
