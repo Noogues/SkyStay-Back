@@ -74,6 +74,14 @@ public class AirplaneAdminController {
         return airplaneAdminService.createAirplanePart2(form);
     }
 
+    @GetMapping("/basic-info/{airplaneCode}")
+    public ResponseVO<AirplaneAllCodeVO> getBasicInfoByCode(@PathVariable String airplaneCode) {
+        return airplaneAdminService.getBasicInfoByCode(airplaneCode);
+    }
 
+    @GetMapping("/cabins/{airplaneCode}")
+    public ResponseVO<List<CabinWithSeatsVO>> getCabinsWithSeatsByAirplaneCode(@PathVariable String airplaneCode) {
+        return airplaneAdminService.getCabinsWithSeatsByAirplaneCode(airplaneCode);
+    }
 
 }
