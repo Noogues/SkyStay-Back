@@ -15,7 +15,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -27,6 +29,8 @@ public class AirplaneAdministrationService {
     private final SeatConfigurationRepository seatConfigurationRepository;
     private final AirplaneCabinRepository airplaneCabinRepository;
     private final SeatRepository seatRepository;
+    private final ImageRepository imageRepository;
+    private final AirplaneImageRepository airplaneImageRepository;
 
     /**
      * Obtiene todos los aviones de la base de datosm paginados dependiendo de los parámetros de la clase PageVO que se le pase.
@@ -85,7 +89,12 @@ public class AirplaneAdministrationService {
             AirplaneType at = airplaneTypeRepository.findById(form.getAirplane_type_id()).orElseThrow(() -> new IllegalArgumentException("No se encontró el tipo de avión con el Id proporcionado"));
 
             Airplane airplane = new Airplane();
-            airplane.setCode(userService.generateShortUuid());
+            String code;
+            do {
+                code = userService.generateShortUuid();
+            } while (airplaneRepository.findByCode(code).isPresent());
+
+            airplane.setCode(code);
             airplane.setModel(form.getModel());
             airplane.setRegistrationNumber(form.getRegistrationNumber());
             airplane.setYearOfManufacture(form.getYearOfManufacture());
@@ -113,8 +122,7 @@ public class AirplaneAdministrationService {
                 System.out.println("Procesando cabina: " + af);
 
                 // Buscar la configuración de asientos
-                SeatConfiguration seatConfiguration = seatConfigurationRepository.findById(af.getSeat_configuration_id())
-                        .orElseThrow(() -> new IllegalArgumentException("No se encontró la configuración de asiento con el ID proporcionado"));
+                SeatConfiguration seatConfiguration = seatConfigurationRepository.findById(af.getSeat_configuration_id()).orElseThrow(() -> new IllegalArgumentException("No se encontró la configuración de asiento con el ID proporcionado"));
 
                 // Crear la cabina
                 AirplaneCabin airplaneCabin = new AirplaneCabin();
@@ -123,8 +131,7 @@ public class AirplaneAdministrationService {
                 airplaneCabin.setRowEnd(af.getRowEnd());
 
                 // Buscar el avión
-                Airplane plane = airplaneRepository.findById(af.getAirplane_id())
-                        .orElseThrow(() -> new IllegalArgumentException("No se ha encontrado el avión con ese ID"));
+                Airplane plane = airplaneRepository.findById(af.getAirplane_id()).orElseThrow(() -> new IllegalArgumentException("No se ha encontrado el avión con ese ID"));
 
                 airplaneCabin.setAirplane(plane);
                 airplaneCabin.setSeatConfiguration(seatConfiguration);
@@ -182,7 +189,7 @@ public class AirplaneAdministrationService {
      * Obtiene todas las configuraciones de asientos de la base de datos.
      * @return response que devuelve los datos y un mensaje de éxito o error.
      */
-    public ResponseVO<List<SeatConfigurationVO>> getAllSeatConfiguration(){
+    public ResponseVO<List<SeatConfigurationVO>> getAllSeatConfiguration() {
         try {
             List<SeatConfiguration> list = seatConfigurationRepository.findAll();
             List<SeatConfigurationVO> finalist = new ArrayList<>();
@@ -204,11 +211,11 @@ public class AirplaneAdministrationService {
      * @return response que devuelve los datos y un mensaje de éxito o error.
      */
     public ResponseVO<List<AirplanesTypesVO>> getAllAirplanesTypes() {
-        try{
+        try {
             List<AirplaneType> airplaneTypes = airplaneTypeRepository.findAll();
             List<AirplanesTypesVO> list = new ArrayList<>();
 
-            for(AirplaneType airplaneType : airplaneTypes) {
+            for (AirplaneType airplaneType : airplaneTypes) {
                 AirplanesTypesVO airplanesTypesVO = new AirplanesTypesVO();
                 airplanesTypesVO.setId(airplaneType.getId());
                 airplanesTypesVO.setName(airplaneType.getName());
@@ -250,7 +257,13 @@ public class AirplaneAdministrationService {
     public ResponseVO<Void> createAirplanesTypes(CreateAirplanesTypesVO airplanesTypes) {
         try {
             AirplaneType airplaneType = new AirplaneType();
-            airplaneType.setCode(userService.generateShortUuid());
+
+            String code;
+            do {
+                code = userService.generateShortUuid();
+            } while (airplaneTypeRepository.findByCode(code).isPresent());
+
+            airplaneType.setCode(code);
             airplaneType.setName(airplanesTypes.getName());
             airplaneType.setManufacturer(airplanesTypes.getManufacturer());
             airplaneType.setCapacity(airplanesTypes.getCapacity());
@@ -296,14 +309,7 @@ public class AirplaneAdministrationService {
                     seatVOs.add(new SeatVO(seat.getId(), seat.getSeatRow(), seat.getSeatColumn(), seat.getState()));
                 }
 
-                CabinWithSeatsVO cabinWithSeats = new CabinWithSeatsVO(
-                        cabin.getId(),
-                        cabin.getSeatConfiguration().getSeatPattern(),
-                        cabin.getRowStart(),
-                        cabin.getRowEnd(),
-                        cabin.getSeatClass(),
-                        seatVOs
-                );
+                CabinWithSeatsVO cabinWithSeats = new CabinWithSeatsVO(cabin.getId(), cabin.getSeatConfiguration().getSeatPattern(), cabin.getRowStart(), cabin.getRowEnd(), cabin.getSeatClass(), seatVOs);
 
                 cabinsWithSeats.add(cabinWithSeats);
             }
@@ -311,6 +317,38 @@ public class AirplaneAdministrationService {
             return new ResponseVO<>(new DataVO<>(cabinsWithSeats), new MessageResponseVO("Cabinas y asientos del avión recuperados con éxito.", 200, LocalDateTime.now()));
         } catch (Exception e) {
             return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error al recuperar las cabinas y asientos del avión.", 404, LocalDateTime.now()));
+        }
+    }
+
+    public ResponseVO<Void> updateAirplaneStatus(UpdateAirplaneStatusVO airplaneStatus) {
+        try {
+            Airplane airplane = airplaneRepository.findByCode(airplaneStatus.getAirplaneCode()).orElseThrow(() -> new IllegalArgumentException("No se encontró el avión con el codigo del avion proporcionado"));
+
+            airplane.setStatus(Status.valueOf(airplaneStatus.getStatus()));
+            airplaneRepository.save(airplane);
+
+            return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Estado del avión actualizado con éxito.", 200, LocalDateTime.now()));
+        } catch (Exception e) {
+            return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error al actualizar el estado del avión.", 404, LocalDateTime.now()));
+        }
+    }
+
+    public ResponseVO<Void> addAirplaneImage(AddImageAirplaneVO airplaneImage) {
+        try {
+            Airplane airplane = airplaneRepository.findByCode(airplaneImage.getAirplaneCode()).orElseThrow(() -> new IllegalArgumentException("No se encontró el avión con el código proporcionado"));
+
+            Image image = new Image();
+            image.setUrl(airplaneImage.getImage());
+            image = imageRepository.save(image);
+
+            AirplaneImage airplaneImage1 = new AirplaneImage();
+            airplaneImage1.setAirplane(airplane);
+            airplaneImage1.setImage(image);
+            airplaneImageRepository.save(airplaneImage1);
+
+            return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Imagen del avión añadida con éxito.", 200, LocalDateTime.now()));
+        } catch (Exception e) {
+            return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error al añadir la imagen del avión.", 404, LocalDateTime.now()));
         }
     }
 }
