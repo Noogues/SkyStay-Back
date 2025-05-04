@@ -2,8 +2,6 @@ package com.example.skystayback.repositories;
 
 import com.example.skystayback.dtos.airplanes.AirplaneAllCodeVO;
 import com.example.skystayback.dtos.airplanes.AirplaneShowVO;
-import com.example.skystayback.dtos.airplanes.CabinVO;
-import com.example.skystayback.dtos.airplanes.SeatVO;
 import com.example.skystayback.models.Airplane;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,7 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import java.util.Optional;
 
 
 @Repository
@@ -25,6 +23,7 @@ public interface AirplaneRepository extends JpaRepository<Airplane, Long> {
             a.yearOfManufacture,
             a.type,
             a.status,
+            i.url,
             new com.example.skystayback.dtos.airplanes.AirplaneTypeVO(
                 at.code,
                 at.name,
@@ -33,6 +32,8 @@ public interface AirplaneRepository extends JpaRepository<Airplane, Long> {
             )
         )
         FROM Airplane a JOIN a.airplaneType at
+        left join AirplaneImage ai on a.id = ai.airplane.id
+        left join Image i on ai.image.id = i.id
         ORDER BY a.id ASC
     """)
     Page<AirplaneShowVO> getAllAirplanes(Pageable pageable);
@@ -54,4 +55,5 @@ public interface AirplaneRepository extends JpaRepository<Airplane, Long> {
 """)
     AirplaneAllCodeVO findBasicInfoByCode(String airplaneCode);
 
+    Optional<Airplane> findByCode(String code);
 }
