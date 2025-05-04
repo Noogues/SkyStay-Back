@@ -84,4 +84,14 @@ public class AirplaneAdminController {
         return airplaneAdminService.getCabinsWithSeatsByAirplaneCode(airplaneCode);
     }
 
+    @PostMapping("/update/status")
+    public ResponseVO<Void> updateAirplaneStatus(@RequestBody UpdateAirplaneStatusVO airplaneStatus) {
+        return airplaneAdminService.updateAirplaneStatus(airplaneStatus);
+    }
+
+
+    @PostMapping("/add/image")
+    public ResponseVO<Void> addAirplaneImage(@RequestBody AddImageAirplaneVO airplaneImage) {
+        return airplaneAdminService.addAirplaneImage(airplaneImage);
+    }
 }
