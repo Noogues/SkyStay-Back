@@ -6,18 +6,25 @@ import com.example.skystayback.dtos.common.UserLoginVO;
 import com.example.skystayback.dtos.common.UserRegisterVO;
 import com.example.skystayback.dtos.common.TokenDecodeVO;
 import com.example.skystayback.services.UserService;
+import com.example.skystayback.services.email.EmailService;
+import com.example.skystayback.services.email.EmailTemplateType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
 public class UserController {
 
     private final UserService userService;
+    private final EmailService emailService;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, EmailService emailService) {
         this.userService = userService;
+        this.emailService = emailService;
     }
 
     @PostMapping("/register")
@@ -33,5 +40,26 @@ public class UserController {
     @GetMapping("/decode-token")
     public ResponseVO<TokenDecodeVO> decodeToken(@RequestHeader("Authorization") String token) {
         return userService.decodeToken(token);
+    }
+
+    @PostMapping("/send-test-email")
+    public String sendTestEmail() {
+        try {
+            // Configura los datos del correo
+            String to = "rjaencobos@safareyes.es";
+            String subject = "Correo de prueba";
+            EmailTemplateType templateType = EmailTemplateType.REGISTRATION;
+
+            // Variables para la plantilla
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("name", "Usuario de prueba");
+            variables.put("message", "Este es un correo de prueba enviado desde el sistema.");
+
+            // Llama al servicio de correo
+            emailService.sendEmail(to, subject, templateType, variables);
+            return "Correo enviado exitosamente.";
+        } catch (Exception e) {
+            return "Error al enviar el correo: " + e.getMessage();
+        }
     }
 }
