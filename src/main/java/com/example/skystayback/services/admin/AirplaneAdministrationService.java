@@ -15,9 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -320,6 +318,12 @@ public class AirplaneAdministrationService {
         }
     }
 
+
+    /**
+     * Actualiza el estado de un avión en la base de datos.
+     * @param airplaneStatus datos del avión a actualizar.
+     * @return response que devuelve los datos y un mensaje de éxito o error.
+     */
     public ResponseVO<Void> updateAirplaneStatus(UpdateAirplaneStatusVO airplaneStatus) {
         try {
             Airplane airplane = airplaneRepository.findByCode(airplaneStatus.getAirplaneCode()).orElseThrow(() -> new IllegalArgumentException("No se encontró el avión con el codigo del avion proporcionado"));
@@ -333,9 +337,14 @@ public class AirplaneAdministrationService {
         }
     }
 
-    public ResponseVO<Void> addAirplaneImage(AddImageAirplaneVO airplaneImage) {
+    /**
+     * Añade una imagen a un avión en la base de datos.
+     * @param airplaneImage datos de la imagen a añadir.
+     * @return response que devuelve los datos y un mensaje de éxito o error.
+     */
+    public ResponseVO<Void> addAirplaneImage(AddImageVO airplaneImage) {
         try {
-            Airplane airplane = airplaneRepository.findByCode(airplaneImage.getAirplaneCode()).orElseThrow(() -> new IllegalArgumentException("No se encontró el avión con el código proporcionado"));
+            Airplane airplane = airplaneRepository.findByCode(airplaneImage.getCode()).orElseThrow(() -> new IllegalArgumentException("No se encontró el avión con el código proporcionado"));
 
             Image image = new Image();
             image.setUrl(airplaneImage.getImage());
