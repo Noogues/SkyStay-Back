@@ -1,4 +1,4 @@
-package com.example.skystayback.dtos.airplanes;
+package com.example.skystayback.dtos.apartments;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ImageVO {
+public class AddRoomImageVO {
+    private String apartmentCode;
     private String url;
+    private String roomType;
 }

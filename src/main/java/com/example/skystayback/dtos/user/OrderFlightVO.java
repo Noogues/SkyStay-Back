@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderFlightVO {
+
     private String flight_code;
     private String code;
     private Float amount;
