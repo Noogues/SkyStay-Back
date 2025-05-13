@@ -42,9 +42,6 @@ public class Apartment {
     @Column(name = "description", nullable = false)
     private String description;
 
-    @Column(name = "availability", nullable = false)
-    private Boolean availability;
-
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     @JoinColumn(name = "city_id")
     private City city;

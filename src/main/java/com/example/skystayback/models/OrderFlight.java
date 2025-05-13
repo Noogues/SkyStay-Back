@@ -33,11 +33,8 @@ public class OrderFlight {
     private byte[] bill;
 
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "seat_booking_id")
+    private SeatBooking seatBooking;
 
-    @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-    @JoinColumn(name = "flight_id")
-    private Flight flight;
 
 }

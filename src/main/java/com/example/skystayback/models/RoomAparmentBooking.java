@@ -1,16 +1,15 @@
 package com.example.skystayback.models;
 
-import com.example.skystayback.enums.Status;
 import com.example.skystayback.enums.StatusRoomBooking;
 import jakarta.persistence.*;
 import lombok.Data;
-import java.math.BigInteger;
+
 import java.time.LocalDate;
 
 @Data
 @Entity
-@Table(name = "room_booking")
-public class RoomBooking {
+@Table(name = "room_booking_apartment")
+public class RoomAparmentBooking {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,8 +26,8 @@ public class RoomBooking {
     private StatusRoomBooking status;
 
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-    @JoinColumn(name = "room_id")
-    private Room room;
+    @JoinColumn(name = "room_apartment_id")
+    private RoomApartment room;
 
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")

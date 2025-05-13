@@ -32,7 +32,7 @@ public class Hotel {
     @Column(name = "email", nullable = false, length = 60)
     private String email;
 
-    @Column(name = "website", nullable = false, length = 120)
+    @Column(name = "website", nullable = false, length = 255)
     private String website;
 
     @Column(name = "stars", nullable = false)

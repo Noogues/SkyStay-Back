@@ -5,8 +5,8 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "room")
-public class Room {
+@Table(name = "room_apartment")
+public class RoomApartment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,6 +20,6 @@ public class Room {
     private Boolean state;
 
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-    @JoinColumn(name = "room_configuration_hotel_id", nullable = false)
-    private RoomConfigurationHotel roomConfiguration;
+    @JoinColumn(name = "room_configuration_apartment_id", nullable = false)
+    private RoomConfigurationApartment roomConfiguration;
 }
