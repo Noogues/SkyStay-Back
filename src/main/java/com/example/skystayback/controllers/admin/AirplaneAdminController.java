@@ -1,6 +1,7 @@
 package com.example.skystayback.controllers.admin;
 
 import com.example.skystayback.dtos.airplanes.*;
+import com.example.skystayback.dtos.common.AddImageVO;
 import com.example.skystayback.dtos.common.PageVO;
 import com.example.skystayback.dtos.common.ResponsePaginatedVO;
 import com.example.skystayback.dtos.common.ResponseVO;
@@ -91,7 +92,7 @@ public class AirplaneAdminController {
 
 
     @PostMapping("/add/image")
-    public ResponseVO<Void> addAirplaneImage(@RequestBody AddImageAirplaneVO airplaneImage) {
+    public ResponseVO<Void> addAirplaneImage(@RequestBody AddImageVO airplaneImage) {
         return airplaneAdminService.addAirplaneImage(airplaneImage);
     }
 }
