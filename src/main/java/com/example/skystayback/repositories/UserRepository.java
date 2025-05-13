@@ -36,13 +36,17 @@ public interface UserRepository  extends JpaRepository<User, Long> {
     @Query("SELECT new com.example.skystayback.dtos.user.HotelRatingVO(h.name, hr.rating) FROM Hotel h LEFT JOIN HotelRating hr ON hr.hotel.id = h.id WHERE hr.user.userCode = :userCode")
     Page<HotelRatingVO> findAllHotelRatingByUserId(@Param("userCode") String userCode, Pageable pageable);
 
-    @Query("SELECT new com.example.skystayback.dtos.user.OrderApartmentVO(a.name, oa.code, oa.amount, oa.discount, oa.status, oa.bill) FROM Apartment a INNER JOIN OrderApartment oa ON oa.apartment.id = a.id WHERE oa.user.userCode = :userCode")
+    @Query("SELECT new com.example.skystayback.dtos.user.OrderApartmentVO(oa.roomBooking.room.roomConfiguration.apartment.name, oa.code, oa.amount, oa.discount, oa.status, oa.bill) " +
+            "FROM OrderApartment oa WHERE oa.roomBooking.user.userCode = :userCode")
     Page<OrderApartmentVO> findAllOrderApartmentByUserId(@Param("userCode") String userCode, Pageable pageable);
 
-    @Query("SELECT new com.example.skystayback.dtos.user.OrderFlightVO(f.code, o.code, o.amount, o.discount, o.status, o.bill) FROM Flight f INNER JOIN OrderFlight o ON o.flight.id = f.id WHERE o.user.userCode = :userCode")
+    @Query("SELECT new com.example.skystayback.dtos.user.OrderFlightVO(o.seatBooking.flight.code, o.code, o.amount, o.discount, o.status, o.bill) " +
+            "FROM OrderFlight o WHERE o.seatBooking.user.userCode = :userCode")
     Page<OrderFlightVO> findAllOrderFlightByUserId(@Param("userCode") String userCode, Pageable pageable);
 
-    @Query("SELECT new com.example.skystayback.dtos.user.OrderHotelVO(h.name, oh.code, oh.amount, oh.discount, oh.status, oh.bill) FROM Hotel h INNER JOIN OrderHotel oh ON oh.room.hotel.id = h.id WHERE oh.user.userCode = :userCode")
+    @Query("SELECT new com.example.skystayback.dtos.user.OrderHotelVO(r.room_number, oh.roomBooking.room.roomConfiguration.roomConfiguration.type, oh.code, oh.amount, oh.discount, oh.status, oh.bill) " +
+            "FROM OrderHotel oh JOIN oh.roomBooking.room r " +
+            "WHERE oh.roomBooking.user.userCode = :userCode")
     Page<OrderHotelVO> findAllOrderHotelByUserId(@Param("userCode") String userCode, Pageable pageable);
 }
 
