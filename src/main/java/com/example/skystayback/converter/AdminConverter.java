@@ -2,6 +2,8 @@ package com.example.skystayback.converter;
 import com.example.skystayback.dtos.common.DataVO;
 import com.example.skystayback.dtos.common.MessageResponseVO;
 import com.example.skystayback.dtos.common.ResponseVO;
+import com.example.skystayback.dtos.hotel.RoomConfigurationVO;
+import com.example.skystayback.models.RoomConfiguration;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
@@ -25,4 +27,11 @@ public class AdminConverter {
         return responseVO;
     }
 
+    public static RoomConfigurationVO convertToRoomConfigurationVO(RoomConfiguration roomConfiguration) {
+        RoomConfigurationVO roomConfigurationVO = new RoomConfigurationVO();
+        roomConfigurationVO.setId(roomConfiguration.getId());
+        roomConfigurationVO.setCapacity(roomConfiguration.getCapacity());
+        roomConfigurationVO.setType(roomConfiguration.getType());
+        return roomConfigurationVO;
+    }
 }
