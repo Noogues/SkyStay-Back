@@ -33,11 +33,7 @@ public class OrderApartment {
     private byte[] bill;
 
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id")
-    private User user;
-
-    @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-    @JoinColumn(name = "apartment_id")
-    private Apartment apartment;
+    @JoinColumn(name = "room_apartment_booking_id")
+    private RoomAparmentBooking roomBooking;
 
 }

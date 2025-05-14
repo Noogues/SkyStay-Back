@@ -1,0 +1,25 @@
+package com.example.skystayback.models;
+
+import jakarta.persistence.*;
+import lombok.Data;
+
+@Data
+@Entity
+@Table(name = "room_apartment")
+public class RoomApartment {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false, unique = true)
+    private Long id;
+
+    @Column(name = "room_number", nullable = false)
+    private Integer room_number;
+
+    @Column(name = "state", nullable = false)
+    private Boolean state;
+
+    @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+    @JoinColumn(name = "room_configuration_apartment_id", nullable = false)
+    private RoomConfigurationApartment roomConfiguration;
+}
