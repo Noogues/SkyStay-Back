@@ -146,6 +146,13 @@ public class UserService implements UserDetailsService {
                     "INVALID_CREDENTIALS");
         }
 
+        if (!user.getValidation()) {
+            throw new ApiException(
+                    "Usuario no validado",
+                    "El usuario no ha sido validado. Por favor, verifica tu correo electrónico.",
+                    "USER_NOT_VALIDATED");
+        }
+
         String jwtToken = jwtService.generateToken(user, user.getUserCode(), user.getRol().name());
         return ResponseVO.<AuthenticationVO>builder()
                 .response(new DataVO<>(AuthenticationVO.builder().token(jwtToken).build()))
