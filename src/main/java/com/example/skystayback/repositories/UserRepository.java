@@ -49,6 +49,7 @@ public interface UserRepository  extends JpaRepository<User, Long> {
             "WHERE oh.roomBooking.user.userCode = :userCode")
     Page<OrderHotelVO> findAllOrderHotelByUserId(@Param("userCode") String userCode, Pageable pageable);
 
-    Optional<User> findTopByCode(Integer code);
+    Optional<User> findTopByEmailAndCode(String email, Integer code);
+
 }
 
