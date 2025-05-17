@@ -39,9 +39,16 @@ public class UserController {
     }
 
     @PostMapping("/verify-code")
-    public ResponseVO<MessageResponseVO> verifyCode(@RequestBody Map<String, Integer> request) {
-        Integer code = request.get("code");
-        return userService.code_check(code);
+    public ResponseVO<MessageResponseVO> verifyCode(@RequestBody Map<String, Object> request) {
+        Integer code = Integer.parseInt(request.get("code").toString());
+        String email = (String) request.get("email");
+        return userService.code_check(code, email);
+    }
+
+    @PostMapping("/resend-code")
+    public ResponseVO<MessageResponseVO> resendCode(@RequestBody Map<String, Object> request) {
+        String email = (String) request.get("email");
+        return userService.resendCode(email);
     }
 
     @PostMapping("/send-test-email")
