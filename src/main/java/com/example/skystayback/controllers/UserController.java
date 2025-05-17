@@ -1,10 +1,6 @@
 package com.example.skystayback.controllers;
 
-import com.example.skystayback.dtos.common.AuthenticationVO;
-import com.example.skystayback.dtos.common.ResponseVO;
-import com.example.skystayback.dtos.common.UserLoginVO;
-import com.example.skystayback.dtos.common.UserRegisterVO;
-import com.example.skystayback.dtos.common.TokenDecodeVO;
+import com.example.skystayback.dtos.common.*;
 import com.example.skystayback.services.UserService;
 import com.example.skystayback.services.email.EmailService;
 import com.example.skystayback.services.email.EmailTemplateType;
@@ -40,6 +36,12 @@ public class UserController {
     @GetMapping("/decode-token")
     public ResponseVO<TokenDecodeVO> decodeToken(@RequestHeader("Authorization") String token) {
         return userService.decodeToken(token);
+    }
+
+    @PostMapping("/verify-code")
+    public ResponseVO<MessageResponseVO> verifyCode(@RequestBody Map<String, Integer> request) {
+        Integer code = request.get("code");
+        return userService.code_check(code);
     }
 
     @PostMapping("/send-test-email")
