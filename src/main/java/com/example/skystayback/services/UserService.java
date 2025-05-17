@@ -153,12 +153,12 @@ public class UserService implements UserDetailsService {
                 .build();
     }
 
-    public ResponseVO<MessageResponseVO> code_check(Integer code){
+    public ResponseVO<MessageResponseVO> code_check(Integer code, String email){
         // Buscar al usuario con el código proporcionado
-        User user = userRepository.findTopByCode(code)
+        User user = userRepository.findTopByEmailAndCode(email, code)
                 .orElseThrow(() -> new ApiException(
                         "Código inválido",
-                        "El código de verificación no es válido o no existe.",
+                        "El código de verificación no es válido para este usuario.",
                         "INVALID_CODE"));
 
         // Verificar si el código ha expirado (10 minutos de validez)
@@ -212,4 +212,37 @@ public class UserService implements UserDetailsService {
         }
     }
 
+    public ResponseVO<MessageResponseVO> resendCode(String email) {
+        User user = userRepository.findTopByEmail(email)
+                .orElseThrow(() -> new ApiException(
+                        "Usuario no encontrado",
+                        "No se encontró un usuario con el correo electrónico proporcionado.",
+                        "USER_NOT_FOUND"));
+
+        if (user.getValidation() && user.getCode() == null) {
+            return ResponseVO.<MessageResponseVO>builder()
+                    .response(new DataVO<>(new MessageResponseVO("El usuario ya está validado", 400, LocalDateTime.now())))
+                    .build();
+        }
+
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("name", user.getName());
+
+        try {
+            int verificationCode = generateVerificationCode();
+            variables.put("verificationCode", verificationCode);
+
+            emailService.sendEmail(user.getEmail(), "Validation code", EmailTemplateType.REGISTRATION, variables);
+
+            user.setCode(verificationCode);
+            user.setValidation_date(LocalDateTime.now());
+            userRepository.save(user);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al enviar el correo de verificación: " + e.getMessage(), e);
+        }
+
+        return ResponseVO.<MessageResponseVO>builder()
+                .response(new DataVO<>(new MessageResponseVO("Código de verificación reenviado", 200, LocalDateTime.now())))
+                .build();
+    }
 }
