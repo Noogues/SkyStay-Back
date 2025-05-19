@@ -16,7 +16,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,6 +40,8 @@ public class UserService implements UserDetailsService {
     }
 
     public ResponseVO<AuthenticationVO> register(UserRegisterVO userDTO) {
+
+        validateUserRegisterVO(userDTO);
 
         if (userRepository.existsByEmail(userDTO.getEmail())) {
             ErrorUtils.throwEmailExistsError();
@@ -88,6 +92,61 @@ public class UserService implements UserDetailsService {
                 .response(new DataVO<>(AuthenticationVO.builder().token(jwtToken).build()))
                 .messages(new MessageResponseVO("Registro exitoso", 200, LocalDateTime.now()))
                 .build();
+    }
+
+    private void validateUserRegisterVO(UserRegisterVO userDTO) {
+        if (userDTO.getEmail() == null || userDTO.getEmail().isBlank()) {
+            ErrorUtils.throwApiError("Email requerido", "El email no puede estar vacío.", "EMAIL_REQUIRED");
+        }
+        if (!userDTO.getEmail().matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+            ErrorUtils.throwApiError("Email inválido", "El formato del email es incorrecto.", "EMAIL_INVALID");
+        }
+        if (userDTO.getPassword() == null || userDTO.getPassword().isBlank()) {
+            ErrorUtils.throwApiError("Contraseña requerida", "La contraseña no puede estar vacía.", "PASSWORD_REQUIRED");
+        }
+        if (!userDTO.getPassword().matches("^(?=.*[0-9])(?=.*[!@#$%^&*()_+{}\\[\\]:;<>,.?~\\\\/-]).{6,}$")) {
+            ErrorUtils.throwApiError("Contraseña inválida", "La contraseña no cumple los requisitos.", "PASSWORD_INVALID");
+        }
+        if (userDTO.getName() == null || userDTO.getName().isBlank()) {
+            ErrorUtils.throwApiError("Nombre requerido", "El nombre no puede estar vacío.", "NAME_REQUIRED");
+        }
+        if (userDTO.getLastName() == null || userDTO.getLastName().isBlank()) {
+            ErrorUtils.throwApiError("Apellido requerido", "El apellido no puede estar vacío.", "LASTNAME_REQUIRED");
+        }
+        if (userDTO.getNif() == null || userDTO.getNif().isBlank()) {
+            ErrorUtils.throwApiError("NIF requerido", "El NIF no puede estar vacío.", "NIF_REQUIRED");
+        }
+        if (!userDTO.getNif().matches("^[0-9]{8}[A-Z]$")) {
+            ErrorUtils.throwApiError("NIF inválido", "El formato del NIF es incorrecto.", "NIF_INVALID");
+        } else {
+            String letters = "TRWAGMYFPDXBNJZSQVHLCKE";
+            int number = Integer.parseInt(userDTO.getNif().substring(0, 8));
+            char providedLetter = userDTO.getNif().charAt(8);
+            char correctLetter = letters.charAt(number % 23);
+            if (providedLetter != correctLetter) {
+                ErrorUtils.throwApiError("NIF inválido", "La letra del NIF no es correcta.", "NIF_INVALID_DATA");
+            }
+        }
+        if (userDTO.getPhone() == null || userDTO.getPhone().isBlank()) {
+            ErrorUtils.throwApiError("Teléfono requerido", "El teléfono no puede estar vacío.", "PHONE_REQUIRED");
+        }
+        if (!userDTO.getPhone().matches("^\\d{9,15}$")) {
+            ErrorUtils.throwApiError("Teléfono inválido", "El formato del teléfono es incorrecto.", "PHONE_INVALID");
+        }
+        if (userDTO.getBirthDate() == null) {
+            ErrorUtils.throwApiError("Fecha de nacimiento requerida", "La fecha de nacimiento no puede estar vacía.", "BIRTHDATE_REQUIRED");
+        } else {
+            LocalDate eighteenYearsAgo = LocalDate.now().minusYears(18);
+            LocalDate birthDate = userDTO.getBirthDate().toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate();
+            if (birthDate.isAfter(eighteenYearsAgo)) {
+                ErrorUtils.throwApiError("Edad mínima", "Debes ser mayor de 18 años.", "MIN_AGE");
+            }
+        }
+        if (userDTO.getGender() == null) {
+            ErrorUtils.throwApiError("Género requerido", "El género no puede estar vacío.", "GENDER_REQUIRED");
+        }
     }
 
     public Integer generateVerificationCode() {
