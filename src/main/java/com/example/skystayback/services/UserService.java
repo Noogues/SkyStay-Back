@@ -91,8 +91,7 @@ public class UserService implements UserDetailsService {
     }
 
     public Integer generateVerificationCode() {
-        int code = (int) (Math.random() * 900000) + 100000;
-        return code;
+        return (int) (Math.random() * 900000) + 100000;
     }
 
     public String generateUniqueUserCode() {
