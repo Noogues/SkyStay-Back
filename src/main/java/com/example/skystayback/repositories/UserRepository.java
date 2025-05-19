@@ -48,5 +48,11 @@ public interface UserRepository  extends JpaRepository<User, Long> {
             "FROM OrderHotel oh JOIN oh.roomBooking.room r " +
             "WHERE oh.roomBooking.user.userCode = :userCode")
     Page<OrderHotelVO> findAllOrderHotelByUserId(@Param("userCode") String userCode, Pageable pageable);
+
+
+    @Query("SELECT new com.example.skystayback.dtos.user.UserAdminVO(u.userCode, u.name, u.lastName, u.email, u.nif, u.phone, u.rol) " +
+            "FROM User u WHERE LOWER(u.name) LIKE LOWER(CONCAT('%', :search, '%')) " +
+            "OR LOWER(u.lastName) LIKE LOWER(CONCAT('%', :search, '%'))")
+    Page<UserAdminVO> findByNameOrLastNameContainingIgnoreCase(@Param("search") String search, Pageable pageable);
 }
 
