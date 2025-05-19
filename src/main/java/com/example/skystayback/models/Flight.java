@@ -33,7 +33,7 @@ public class Flight {
     private LocalDateTime date_time_arrival;
 
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-    @JoinColumn(name = "airlane_id")
+    @JoinColumn(name = "airline_id")
     private Airline airline;
 
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
