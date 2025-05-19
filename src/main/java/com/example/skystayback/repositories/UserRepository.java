@@ -54,5 +54,9 @@ public interface UserRepository  extends JpaRepository<User, Long> {
             "FROM User u WHERE LOWER(u.name) LIKE LOWER(CONCAT('%', :search, '%')) " +
             "OR LOWER(u.lastName) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<UserAdminVO> findByNameOrLastNameContainingIgnoreCase(@Param("search") String search, Pageable pageable);
+
+    
+    Optional<User> findTopByEmailAndCode(String email, Integer code);
+
 }
 

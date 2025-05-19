@@ -6,6 +6,9 @@ import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -58,6 +61,15 @@ public class User implements UserDetails {
     @Column(name = "rol", nullable = false)
     @Enumerated(EnumType.ORDINAL)
     private UserRol rol;
+
+    @Column(name = "validation")
+    private Boolean validation;
+
+    @Column(name = "code")
+    private Integer code;
+
+    @Column(name = "validation_date")
+    private LocalDateTime validation_date;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
