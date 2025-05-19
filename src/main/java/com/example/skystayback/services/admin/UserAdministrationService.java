@@ -16,27 +16,32 @@ public class UserAdministrationService {
 
     private final UserRepository userRepository;
 
-    /**
+   /**
      * Metodo para obtener todos los usuarios
      * @param pageVO informacion de paginacion
+     * @param search cadena de busqueda
      * @return lista de usuarios
      */
-    public ResponsePaginatedVO<UserAdminVO> getUsers(PageVO pageVO) {
+    public ResponsePaginatedVO<UserAdminVO> getUsers(PageVO pageVO, String search) {
         try {
-            Page<UserAdminVO> usersPage = userRepository.getAllUsers(pageVO.toPageable());
+            Page<UserAdminVO> users;
+            if (search != null && !search.isEmpty()) {
+                users = userRepository.findByNameOrLastNameContainingIgnoreCase(search, pageVO.toPageable());
+            }else {
+                users = userRepository.getAllUsers(pageVO.toPageable());
+            }
             ResponsePaginatedVO<UserAdminVO> data = new ResponsePaginatedVO<>();
-            data.setObjects(usersPage.getContent());
-            data.setHasNextPage(usersPage.hasNext());
-            data.setHasPreviousPage(usersPage.hasPrevious());
-            data.setCurrentPage(usersPage.getNumber());
-            data.setTotalPages(usersPage.getTotalPages());
+            data.setObjects(users.getContent());
+            data.setHasNextPage(users.hasNext());
+            data.setHasPreviousPage(users.hasPrevious());
+            data.setCurrentPage(users.getNumber());
+            data.setTotalPages(users.getTotalPages());
             data.setMessages(new MessageResponseVO("Usuarios recuperados con éxito", 200, LocalDateTime.now()));
             return data;
         } catch (Exception e) {
-            return new ResponsePaginatedVO<>(new MessageResponseVO("Error al recuperar los usuarios", 404, LocalDateTime.now()));
+            return new ResponsePaginatedVO<>(new MessageResponseVO("Error al recuperar los usuarios:", 404, LocalDateTime.now()));
         }
     }
-
     /**
      * Metodo para obtener las calificaciones de aerolíneas mediante el codigo del usuario
      * @param userCode codigo del usuario
