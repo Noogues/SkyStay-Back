@@ -91,8 +91,7 @@ public class UserService implements UserDetailsService {
     }
 
     public Integer generateVerificationCode() {
-        int code = (int) (Math.random() * 900000) + 100000;
-        return code;
+        return (int) (Math.random() * 900000) + 100000;
     }
 
     public String generateUniqueUserCode() {
@@ -161,14 +160,12 @@ public class UserService implements UserDetailsService {
     }
 
     public ResponseVO<MessageResponseVO> code_check(Integer code, String email){
-        // Buscar al usuario con el código proporcionado
         User user = userRepository.findTopByEmailAndCode(email, code)
                 .orElseThrow(() -> new ApiException(
                         "Código inválido",
                         "El código de verificación no es válido para este usuario.",
                         "INVALID_CODE"));
 
-        // Verificar si el código ha expirado (10 minutos de validez)
         LocalDateTime now = LocalDateTime.now();
         if (user.getValidation_date() == null || user.getValidation_date().plusMinutes(10).isBefore(now)) {
             throw new ApiException(
@@ -177,10 +174,9 @@ public class UserService implements UserDetailsService {
                     "EXPIRED_CODE");
         }
 
-        // Si el código es válido, actualizar el estado de validación del usuario
         user.setValidation(true);
-        user.setCode(null); // Limpiar el código después de la validación
-        user.setValidation_date(null); // Limpiar la fecha de validación
+        user.setCode(null);
+        user.setValidation_date(null);
         userRepository.save(user);
 
         // Devolver una respuesta exitosa
