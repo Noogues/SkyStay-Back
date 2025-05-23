@@ -307,4 +307,54 @@ public class UserService implements UserDetailsService {
                 .response(new DataVO<>(new MessageResponseVO("Código de verificación reenviado", 200, LocalDateTime.now())))
                 .build();
     }
+
+    public ResponseVO<MessageResponseVO> sendPasswordCode(String email) {
+        User user = userRepository.findTopByEmail(email)
+                .orElseThrow(() -> new ApiException(
+                        "Usuario no encontrado",
+                        "No se encontró un usuario con el correo electrónico proporcionado.",
+                        "USER_NOT_FOUND"));
+
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("name", user.getName());
+
+        try {
+            int verificationCode = generateVerificationCode();
+            variables.put("verificationCode", verificationCode);
+
+            emailService.sendEmail(user.getEmail(), "Validation code", EmailTemplateType.RESET_PASSWORD, variables);
+
+            user.setCode(verificationCode);
+            user.setValidation_date(LocalDateTime.now());
+            userRepository.save(user);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al enviar el correo de verificación: " + e.getMessage(), e);
+        }
+
+        return ResponseVO.<MessageResponseVO>builder()
+                .response(new DataVO<>(new MessageResponseVO("Código de verificación enviado", 200, LocalDateTime.now())))
+                .build();
+    }
+
+    public ResponseVO<MessageResponseVO> resetPassword(String email, String password) {
+        User user = userRepository.findTopByEmail(email)
+                .orElseThrow(() -> new ApiException(
+                        "Usuario no encontrado",
+                        "No se encontró un usuario con el correo electrónico proporcionado.",
+                        "USER_NOT_FOUND"));
+
+        if (password == null || password.isBlank()) {
+            ErrorUtils.throwApiError("Contraseña requerida", "La contraseña no puede estar vacía.", "PASSWORD_REQUIRED");
+        }
+        if (!password.matches("^(?=.*[0-9])(?=.*[!@#$%^&*()_+{}\\[\\]:;<>,.?~\\\\/-]).{6,}$")) {
+            ErrorUtils.throwApiError("Contraseña inválida", "La contraseña no cumple los requisitos.", "PASSWORD_INVALID");
+        }
+
+        user.setPassword(passwordEncoder.encode(password));
+        userRepository.save(user);
+
+        return ResponseVO.<MessageResponseVO>builder()
+                .response(new DataVO<>(new MessageResponseVO("Contraseña actualizada correctamente", 200, LocalDateTime.now())))
+                .build();
+    }
 }
