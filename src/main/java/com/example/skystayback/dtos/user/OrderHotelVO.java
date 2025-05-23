@@ -1,18 +1,18 @@
 package com.example.skystayback.dtos.user;
 
+import com.example.skystayback.enums.RoomType;
 import com.example.skystayback.enums.StatusOrder;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderHotelVO {
 
-    private String hotel_name;
+    private Integer roomNumber;
+    private RoomType roomType;
     private String code;
     private Float amount;
     private Float discount;

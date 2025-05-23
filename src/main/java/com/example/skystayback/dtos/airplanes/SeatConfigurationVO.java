@@ -11,7 +11,5 @@ import lombok.NoArgsConstructor;
 public class SeatConfigurationVO {
 
     private Long id;
-    private Integer totalRows;
-    private SeatClass seatClass;
     private String seatPattern;
 }

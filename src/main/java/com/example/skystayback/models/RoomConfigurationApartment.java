@@ -2,12 +2,11 @@ package com.example.skystayback.models;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import java.math.BigInteger;
 
 @Data
 @Entity
-@Table(name = "room_image")
-public class RoomImage {
+@Table(name = "room_configuration_apartment")
+public class RoomConfigurationApartment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,12 +14,13 @@ public class RoomImage {
     private Long id;
 
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-    @JoinColumn(name = "room_id")
-    private Room room;
+    @JoinColumn(name = "room_configuration_id", nullable = false)
+    private RoomConfiguration roomConfiguration;
 
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-    @JoinColumn(name = "image_id")
-    private Image image;
+    @JoinColumn(name = "apartment_id", nullable = false)
+    private Apartment apartment;
 
-
+    @Column(name = "url")
+    private String url;
 }

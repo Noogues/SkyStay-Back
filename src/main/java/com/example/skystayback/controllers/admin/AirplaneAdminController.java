@@ -1,6 +1,7 @@
 package com.example.skystayback.controllers.admin;
 
 import com.example.skystayback.dtos.airplanes.*;
+import com.example.skystayback.dtos.common.AddImageVO;
 import com.example.skystayback.dtos.common.PageVO;
 import com.example.skystayback.dtos.common.ResponsePaginatedVO;
 import com.example.skystayback.dtos.common.ResponseVO;
@@ -74,6 +75,24 @@ public class AirplaneAdminController {
         return airplaneAdminService.createAirplanePart2(form);
     }
 
+    @GetMapping("/basic-info/{airplaneCode}")
+    public ResponseVO<AirplaneAllCodeVO> getBasicInfoByCode(@PathVariable String airplaneCode) {
+        return airplaneAdminService.getBasicInfoByCode(airplaneCode);
+    }
+
+    @GetMapping("/cabins/{airplaneCode}")
+    public ResponseVO<List<CabinWithSeatsVO>> getCabinsWithSeatsByAirplaneCode(@PathVariable String airplaneCode) {
+        return airplaneAdminService.getCabinsWithSeatsByAirplaneCode(airplaneCode);
+    }
+
+    @PostMapping("/update/status")
+    public ResponseVO<Void> updateAirplaneStatus(@RequestBody UpdateAirplaneStatusVO airplaneStatus) {
+        return airplaneAdminService.updateAirplaneStatus(airplaneStatus);
+    }
 
 
+    @PostMapping("/add/image")
+    public ResponseVO<Void> addAirplaneImage(@RequestBody AddImageVO airplaneImage) {
+        return airplaneAdminService.addAirplaneImage(airplaneImage);
+    }
 }

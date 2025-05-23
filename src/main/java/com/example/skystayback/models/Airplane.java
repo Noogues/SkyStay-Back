@@ -39,7 +39,4 @@ public class Airplane {
     @JoinColumn(name = "airplane_type_id", nullable = false)
     private AirplaneType airplaneType;
 
-    @OneToMany(mappedBy = "airplane", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<AirplaneCabin> cabins = new ArrayList<>();
-
 }

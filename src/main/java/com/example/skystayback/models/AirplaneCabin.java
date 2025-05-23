@@ -1,5 +1,6 @@
 package com.example.skystayback.models;
 
+import com.example.skystayback.enums.SeatClass;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -19,6 +20,10 @@ public class AirplaneCabin {
     @ManyToOne
     @JoinColumn(name = "seat_configuration_id", nullable = false)
     private SeatConfiguration seatConfiguration;
+
+    @Enumerated(EnumType.ORDINAL)
+    @Column(name = "class", nullable = false)
+    private SeatClass seatClass;
 
     @Column(name = "row_start")
     private Integer rowStart;
