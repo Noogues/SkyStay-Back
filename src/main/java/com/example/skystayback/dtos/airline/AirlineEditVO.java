@@ -9,7 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AirlineAddVO {
+public class AirlineEditVO {
+    private String code;
     private String name;
     private String phone;
     private String email;

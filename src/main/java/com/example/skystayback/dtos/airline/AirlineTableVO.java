@@ -1,16 +1,16 @@
 package com.example.skystayback.dtos.airline;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class AirlineAddVO {
+public class AirlineTableVO {
+    private String code;
     private String name;
+    private String image;
     private String phone;
     private String email;
     private String website;

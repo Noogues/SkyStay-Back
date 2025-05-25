@@ -1,4 +1,4 @@
-package com.example.skystayback.dtos.flights;
+package com.example.skystayback.dtos.meal;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,8 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AirlaneTableVO {
-    private String code;
+public class MealVO {
+
     private String name;
-    private String iataCode;
+
 }

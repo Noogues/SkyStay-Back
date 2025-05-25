@@ -1,5 +1,7 @@
 package com.example.skystayback.dtos.flights;
 
+import com.example.skystayback.dtos.airline.AirlineTableVO;
+import com.example.skystayback.dtos.airports.AirportAdminVO;
 import com.example.skystayback.enums.FlightStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,7 +13,7 @@ import java.time.LocalTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class FlightsTableVO {
+public class FlightsDetailsVO {
     private String code;
     private LocalTime departureTime;
     private FlightStatus status;
@@ -19,7 +21,7 @@ public class FlightsTableVO {
     private LocalDateTime dateTimeArrival;
 
     private AirlineTableVO airline;
-    private AirportTableVO departureAirport;
-    private AirportTableVO arrivalAirport;
-    private AirplaneTableVO airplane;
+    private AirportAdminVO departureAirport;
+    private AirportAdminVO arrivalAirport;
+    private AirplaneShowVO airplane;
 }
