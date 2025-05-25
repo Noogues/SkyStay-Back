@@ -30,6 +30,13 @@ public class AirplaneAdminController {
         return airplaneAdminService.getAllAirplanes(pageVO);
     }
 
+    @GetMapping("/all/reduced")
+    public ResponsePaginatedVO<AirplaneReducedVO> getAllAirplanesReduced(@RequestParam(defaultValue = "30") Integer limit, @RequestParam(defaultValue = "1") Integer page) {
+        page = Math.max(page, 1);
+        PageVO pageVO = new PageVO(limit, page);
+        return airplaneAdminService.getAllAirplanesReduced(pageVO);
+    }
+
     @GetMapping("/types/all")
     public ResponseVO<List<AirplaneTypeEnum>> getAllAirplaneTypeEnum() {
         return airplaneAdminService.getAllAirplaneTypeEnum();

@@ -2,6 +2,7 @@ package com.example.skystayback.controllers.admin;
 
 import com.example.skystayback.dtos.airports.AirportAdminVO;
 import com.example.skystayback.dtos.airports.AirportFormVO;
+import com.example.skystayback.dtos.airports.AirportReducedVO;
 import com.example.skystayback.dtos.common.PageVO;
 import com.example.skystayback.dtos.common.ResponsePaginatedVO;
 import com.example.skystayback.dtos.common.ResponseVO;
@@ -19,8 +20,16 @@ public class AirportAdminController {
 
     @GetMapping("/all")
     public ResponsePaginatedVO<AirportAdminVO> getAirports(@RequestParam(defaultValue = "30") Integer limit, @RequestParam(defaultValue = "0") Integer page) {
+        page = Math.max(page, 1);
         PageVO pageVO = new PageVO(limit, page);
         return airportsService.getAirports(pageVO);
+    }
+
+    @GetMapping("/all/reduced")
+    public ResponsePaginatedVO<AirportReducedVO> getAirportsReduced(@RequestParam(defaultValue = "30") Integer limit, @RequestParam(defaultValue = "0") Integer page) {
+        page = Math.max(page, 1);
+        PageVO pageVO = new PageVO(limit, page);
+        return airportsService.getAirportsReduced(pageVO);
     }
 
     @PostMapping("/create")

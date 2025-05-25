@@ -55,7 +55,7 @@ public class UserController {
     public String sendTestEmail() {
         try {
             // Configura los datos del correo
-            String to = "rjaencobos@safareyes.es";
+            String to = "anogues23@gmail.com";
             String subject = "Correo de prueba";
             EmailTemplateType templateType = EmailTemplateType.REGISTRATION;
 
