@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -46,6 +45,7 @@ public class HotelAdministrationService {
             data.setMessages(new MessageResponseVO("Hoteles recuperados con éxito.", 200, LocalDateTime.now()));
             return data;
         } catch (Exception e) {
+            System.out.println("getAllHotels: " + e.getMessage());
             return new ResponsePaginatedVO<>(new MessageResponseVO("Error al recuperar los hoteles", 404, LocalDateTime.now()));
         }
     }
@@ -62,8 +62,8 @@ public class HotelAdministrationService {
             hotel.setCode(userService.generateShortUuid());
             hotel.setName(hotelFormVO.getName());
             hotel.setAddress(hotelFormVO.getAddress());
-            hotel.setPostal_code(hotelFormVO.getPostalCode());
-            hotel.setPhone_number(hotelFormVO.getPhone_number());
+            hotel.setPostalCode(hotelFormVO.getPostalCode());
+            hotel.setPhoneNumber(hotelFormVO.getPhone_number());
             hotel.setEmail(hotelFormVO.getEmail());
             hotel.setWebsite(hotelFormVO.getWebsite());
             hotel.setStars(0);
@@ -72,31 +72,41 @@ public class HotelAdministrationService {
             hotel.setCity(city);
             hotelRepository.save(hotel);
 
+            createRooms(hotelFormVO, hotel);
+            return new ResponseVO<>(new DataVO<>(null), new MessageResponseVO("Hotel creado con éxito", 200, LocalDateTime.now()));
+        } catch (Exception e) {
+            System.out.println("addHotel: " + e.getMessage());
+            return new ResponseVO<>(new DataVO<>(null), new MessageResponseVO("Error al crear el hotel", 500, LocalDateTime.now()));
+        }
+    }
+
+    private void createRooms(HotelFormVO hotelFormVO, Hotel hotel) {
+        try {
             for (RoomFormVO form : hotelFormVO.getRooms()) {
                 Integer totalRooms = form.getTotal_rooms();
                 RoomConfiguration roomConfiguration = new RoomConfiguration();
                 roomConfiguration.setCode(userService.generateShortUuid());
                 roomConfiguration.setCapacity(form.getCapacity());
                 roomConfiguration.setType(RoomType.valueOf(form.getType()));
-                roomConfigurationRepository.save(roomConfiguration);
+                roomConfiguration = roomConfigurationRepository.save(roomConfiguration);
+
                 RoomConfigurationHotel roomConfigurationHotel = new RoomConfigurationHotel();
                 roomConfigurationHotel.setHotel(hotel);
                 roomConfigurationHotel.setRoomConfiguration(roomConfiguration);
-                roomConfigurationHotelRepository.save(roomConfigurationHotel);
-                int cont = 0;
-                while (totalRooms > 0) {
-                    cont += 1;
+                roomConfigurationHotel = roomConfigurationHotelRepository.save(roomConfigurationHotel);
+
+                for (int cont = 1; totalRooms > 0; totalRooms--, cont++) {
                     Room room = new Room();
-                    room.setRoom_number(cont);
+                    room.setRoomNumber(cont);
                     room.setState(true);
                     room.setRoomConfiguration(roomConfigurationHotel);
                     roomRepository.save(room);
-                    totalRooms--;
                 }
+
             }
-            return new ResponseVO<>(new DataVO<>(null), new MessageResponseVO("Hotel creado con éxito", 200, LocalDateTime.now()));
         } catch (Exception e) {
-            return new ResponseVO<>(new DataVO<>(null), new MessageResponseVO("Error al crear el hotel", 500, LocalDateTime.now()));
+            System.out.println("createRooms: " + e.getMessage());
+            throw new RuntimeException("Error al crear las habitaciones del hotel");
         }
     }
 
@@ -120,6 +130,7 @@ public class HotelAdministrationService {
 
             return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Imagen del hotel añadida con éxito.", 200, LocalDateTime.now()));
         } catch (Exception e) {
+            System.out.println("addHotelImage: " + e.getMessage());
             return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error al añadir la imagen del hotel.", 404, LocalDateTime.now()));
         }
     }
@@ -134,6 +145,7 @@ public class HotelAdministrationService {
             List<RoomType> roomTypes = List.of(RoomType.values());
             return new ResponseVO<>(new DataVO<>(roomTypes), new MessageResponseVO("Tipos de habitaciones recuperados con éxito.", 200, LocalDateTime.now()));
         } catch (Exception e) {
+            System.out.println("getAllRoomTypes: " + e.getMessage());
             return new ResponseVO<>(new DataVO<>(new ArrayList<>()), new MessageResponseVO("Error al recuperar los tipos de habitaciones", 404, LocalDateTime.now()));
         }
     }
@@ -150,6 +162,7 @@ public class HotelAdministrationService {
                     .toList();
             return new ResponseVO<>(new DataVO<>(roomConfigurationVOs), new MessageResponseVO("Configuraciones de habitaciones recuperadas con éxito.", 200, LocalDateTime.now()));
         } catch (Exception e) {
+            System.out.println("getAllRoomConfigurations: " + e.getMessage());
             return new ResponseVO<>(new DataVO<>(new ArrayList<>()), new MessageResponseVO("Error al recuperar las configuraciones de habitaciones", 404, LocalDateTime.now()));
         }
     }
@@ -170,19 +183,19 @@ public class HotelAdministrationService {
                 room.setRoomType(rc.getType());
                 room.setImage(rc.getUrl());
                 List<RoomVO> roomVOList = roomRepository.findAllRoomsByHotelCodeAndRoomConfigurationId(rc.getId());
-                // Filtrar en la lista todos los valores nulos
+
+                // Si hay tipos de habitaciones donde estas no se han creado, se filtran para evitar errores.
                 List<RoomVO> filteredRooms = roomVOList.stream()
                         .filter(r -> r.getRoomNumber() != null && r.getState() != null)
                         .toList();
-
                 if (!filteredRooms.isEmpty()) {
                     room.setRooms(filteredRooms);
                     hotelDetails.getRoomsDetails().add(room);
                 }
             }
-            System.out.println(hotelDetails);
             return new ResponseVO<>(new DataVO<>(hotelDetails), new MessageResponseVO("Hotel recuperado con éxito", 200, LocalDateTime.now()));
         } catch (Exception e) {
+            System.out.println("getHotel: " + e.getMessage());
             return new ResponseVO<>(new DataVO<>(null), new MessageResponseVO("Error al recuperar el hotel", 500, LocalDateTime.now()));
         }
     }
@@ -200,6 +213,7 @@ public class HotelAdministrationService {
             roomConfigurationHotelRepository.save(roomConfigurationHotel);
             return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Imagen de habitación añadida con éxito.", 200, LocalDateTime.now()));
         } catch (Exception e) {
+            System.out.println("addRoomImage: " + e.getMessage());
             return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error al añadir la imagen de habitación.", 404, LocalDateTime.now()));
         }
     }
@@ -212,13 +226,14 @@ public class HotelAdministrationService {
     public ResponseVO<Void> editHotel (EditHotelVO form){
         try {
             Hotel hotel = hotelRepository.findByCode(form.getCode()).orElseThrow(() -> new IllegalArgumentException("No se encontró el hotel con el código proporcionado"));
-            hotel.setPhone_number(form.getPhoneNumber());
+            hotel.setPhoneNumber(form.getPhoneNumber());
             hotel.setEmail(form.getEmail());
             hotel.setWebsite(form.getWebsite());
             hotel.setDescription(form.getDescription());
             hotelRepository.save(hotel);
             return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Hotel editado con éxito.", 200, LocalDateTime.now()));
         } catch (Exception e) {
+            System.out.println("editHotel: " + e.getMessage());
             return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error al editar el hotel.", 404, LocalDateTime.now()));
         }
     }

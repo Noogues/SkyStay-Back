@@ -39,6 +39,7 @@ public class UserAdministrationService {
             data.setMessages(new MessageResponseVO("Usuarios recuperados con éxito", 200, LocalDateTime.now()));
             return data;
         } catch (Exception e) {
+            System.out.println("getUsers: " + e.getMessage());
             return new ResponsePaginatedVO<>(new MessageResponseVO("Error al recuperar los usuarios:", 404, LocalDateTime.now()));
         }
     }
@@ -60,6 +61,7 @@ public class UserAdministrationService {
             data.setMessages(new MessageResponseVO("Calificaciones de aerolíneas recuperadas con éxito", 200, LocalDateTime.now()));
             return data;
         } catch (Exception e) {
+            System.out.println("getAirlaneRating: " + e.getMessage());
             return new ResponsePaginatedVO<>(new MessageResponseVO("Error al recuperar las calificaciones de aerolíneas:", 404, LocalDateTime.now()));
         }
     }
@@ -82,6 +84,7 @@ public class UserAdministrationService {
             data.setMessages(new MessageResponseVO("Calificaciones de apartamentos recuperadas con éxito", 200, LocalDateTime.now()));
             return data;
         } catch (Exception e) {
+            System.out.println("getApartmentRating: " + e.getMessage());
             return new ResponsePaginatedVO<>(new MessageResponseVO("Error al recuperar las calificaciones de apartamentos:", 404, LocalDateTime.now()));
         }
     }
@@ -104,6 +107,7 @@ public class UserAdministrationService {
             data.setMessages(new MessageResponseVO("Calificaciones de hoteles recuperadas con éxito", 200, LocalDateTime.now()));
             return data;
         } catch (Exception e) {
+            System.out.println("getHotelRating: " + e.getMessage());
             return new ResponsePaginatedVO<>(new MessageResponseVO("Error al recuperar las calificaciones de hoteles:", 404, LocalDateTime.now()));
         }
     }
@@ -126,6 +130,7 @@ public class UserAdministrationService {
             data.setMessages(new MessageResponseVO("Órdenes de apartamentos recuperadas con éxito", 200, LocalDateTime.now()));
             return data;
         } catch (Exception e) {
+            System.out.println("getOrderApartment: " + e.getMessage());
             return new ResponsePaginatedVO<>(new MessageResponseVO("Error al recuperar las órdenes de apartamentos:", 404, LocalDateTime.now()));
         }
     }
@@ -148,6 +153,7 @@ public class UserAdministrationService {
             data.setMessages(new MessageResponseVO("Órdenes de vuelos recuperadas con éxito", 200, LocalDateTime.now()));
             return data;
         } catch (Exception e) {
+            System.out.println("getOrderFlight: " + e.getMessage());
             return new ResponsePaginatedVO<>(new MessageResponseVO("Error al recuperar las órdenes de vuelos:", 404, LocalDateTime.now()));
         }
     }
@@ -170,6 +176,7 @@ public class UserAdministrationService {
             data.setMessages(new MessageResponseVO("Órdenes de hoteles recuperadas con éxito", 200, LocalDateTime.now()));
             return data;
         } catch (Exception e) {
+            System.out.println("getOrderHotel: " + e.getMessage());
             return new ResponsePaginatedVO<>(new MessageResponseVO("Error al recuperar las órdenes de hoteles:", 404, LocalDateTime.now()));
         }
     }
@@ -188,6 +195,7 @@ public class UserAdministrationService {
                     .messages(new MessageResponseVO("Información del usuario obtenida", 200, LocalDateTime.now()))
                     .build();
         }catch (Exception e){
+            System.out.println("getUserInfoByCode: " + e.getMessage());
             return new ResponseVO<>(null, new MessageResponseVO("Error al intentar obtener la información del usuario", 400, LocalDateTime.now()));
         }
     }

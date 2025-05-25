@@ -30,6 +30,11 @@ public class AparmentAdministrationService {
     private final RoomApartmentRepository roomApartmentRepository;
 
 
+    /**
+     * Obtiene todos los apartamentos disponibles en la base de datos.
+     * @param pageVO Objeto que contiene la información de paginación.
+     * @return Un objeto ResponsePaginatedVO que contiene la lista de apartamentos y la información de paginación.
+     */
     public ResponsePaginatedVO<HotelAdminVO> getAllApartments(PageVO pageVO) {
         try {
             Page<HotelAdminVO> hotels = apartmentRepository.findAllApartments(pageVO.toPageable());
@@ -39,21 +44,27 @@ public class AparmentAdministrationService {
             data.setHasPreviousPage(hotels.hasPrevious());
             data.setCurrentPage(hotels.getNumber());
             data.setTotalPages(hotels.getTotalPages());
-            data.setMessages(new MessageResponseVO("Hoteles recuperados con éxito.", 200, LocalDateTime.now()));
+            data.setMessages(new MessageResponseVO("Apartamentos recuperados con éxito.", 200, LocalDateTime.now()));
             return data;
         } catch (Exception e) {
-            return new ResponsePaginatedVO<>(new MessageResponseVO("Error al recuperar los hoteles", 404, LocalDateTime.now()));
+            System.out.println("getAllApartments: " + e.getMessage());
+            return new ResponsePaginatedVO<>(new MessageResponseVO("Error al recuperar los apartamentos", 404, LocalDateTime.now()));
         }
     }
 
+    /**
+     * Crea un nuevo apartamento en la base de datos.
+     * @param hotelFormVO Objeto que contiene la información del apartamento a crear.
+     * @return Un objeto ResponseVO que indica el resultado de la operación.
+     */
     public ResponseVO<String> addApartment(HotelFormVO hotelFormVO) {
         try {
             Apartment apartment = new Apartment();
             apartment.setCode(userService.generateShortUuid());
             apartment.setName(hotelFormVO.getName());
             apartment.setAddress(hotelFormVO.getAddress());
-            apartment.setPostal_code(hotelFormVO.getPostalCode());
-            apartment.setPhone_number(hotelFormVO.getPhone_number());
+            apartment.setPostalCode(hotelFormVO.getPostalCode());
+            apartment.setPhoneNumber(hotelFormVO.getPhone_number());
             apartment.setEmail(hotelFormVO.getEmail());
             apartment.setWebsite(hotelFormVO.getWebsite());
             apartment.setStars(0);
@@ -77,20 +88,25 @@ public class AparmentAdministrationService {
                 while (totalRooms > 0) {
                     cont += 1;
                     RoomApartment room = new RoomApartment();
-                    room.setRoom_number(cont);
+                    room.setRoomNumber(cont);
                     room.setState(true);
                     room.setRoomConfiguration(roomConfigurationApartment);
                     roomApartmentRepository.save(room);
                     totalRooms--;
                 }
             }
-            return new ResponseVO<>(new DataVO<>(null), new MessageResponseVO("Hotel creado con éxito", 200, LocalDateTime.now()));
+            return new ResponseVO<>(new DataVO<>(null), new MessageResponseVO("Apartamento creado con éxito", 200, LocalDateTime.now()));
         } catch (Exception e) {
-            return new ResponseVO<>(new DataVO<>(null), new MessageResponseVO("Error al crear el hotel", 500, LocalDateTime.now()));
+            System.out.println("addApartment: " + e.getMessage());
+            return new ResponseVO<>(new DataVO<>(null), new MessageResponseVO("Error al crear el apartamento", 500, LocalDateTime.now()));
         }
     }
 
-
+    /**
+     * Añade una imagen a un apartamento.
+     * @param form Objeto que contiene la información de la imagen a añadir.
+     * @return Un objeto ResponseVO que indica el resultado de la operación.
+     */
     public ResponseVO<Void> addApartmentImage(AddImageVO form) {
         try {
             Apartment apartment = apartmentRepository.findByCode(form.getCode()).orElseThrow(() -> new IllegalArgumentException("No se encontró el avión con el código proporcionado"));
@@ -104,13 +120,18 @@ public class AparmentAdministrationService {
             apartmentImage.setImage(image);
             apartmentImageRepository.save(apartmentImage);
 
-            return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Imagen del hotel añadida con éxito.", 200, LocalDateTime.now()));
+            return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Imagen del apartamento añadida con éxito.", 200, LocalDateTime.now()));
         } catch (Exception e) {
-            return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error al añadir la imagen del hotel.", 404, LocalDateTime.now()));
+            System.out.println("addApartmentImage: " + e.getMessage());
+            return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error al añadir la imagen del apartamento.", 404, LocalDateTime.now()));
         }
     }
 
-
+    /**
+     * Obtiene los detalles de un apartamento por su código.
+     * @param apartmentCode El código del apartamento a recuperar.
+     * @return Un objeto ResponseVO que contiene los detalles del apartamento.
+     */
     public ResponseVO<ShowHotelDetails> getApartmentByCode(String apartmentCode) {
         try {
             ShowHotelDetails hotelDetails = apartmentRepository.findApartmentDetailsByCode(apartmentCode);
@@ -135,12 +156,16 @@ public class AparmentAdministrationService {
             System.out.println(hotelDetails);
             return new ResponseVO<>(new DataVO<>(hotelDetails), new MessageResponseVO("Apartamento recuperado con éxito", 200, LocalDateTime.now()));
         } catch (Exception e) {
-            System.out.println(e);
-            return new ResponseVO<>(new DataVO<>(null), new MessageResponseVO("Error al recuperar el hotel", 500, LocalDateTime.now()));
+            System.out.println("getApartmentByCode: " + e.getMessage());
+            return new ResponseVO<>(new DataVO<>(null), new MessageResponseVO("Error al recuperar el apartamento", 500, LocalDateTime.now()));
         }
     }
 
-
+    /**
+     * Añade una imagen a una habitación de un apartamento.
+     * @param form Objeto que contiene la información de la imagen a añadir.
+     * @return Un objeto ResponseVO que indica el resultado de la operación.
+     */
     public ResponseVO<Void> addRoomImage(AddRoomImageVO form) {
         try {
             Apartment apartment = apartmentRepository.findByCode(form.getApartmentCode()).orElseThrow(() -> new IllegalArgumentException("No se encontró el hotel con el código proporcionado"));
@@ -149,21 +174,28 @@ public class AparmentAdministrationService {
             roomConfigurationApartmentRepository.save(roomConfigurationApartment);
             return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Imagen de habitación añadida con éxito.", 200, LocalDateTime.now()));
         } catch (Exception e) {
+            System.out.println("addRoomImage: " + e.getMessage());
             return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error al añadir la imagen de habitación.", 404, LocalDateTime.now()));
         }
     }
 
+    /**
+     * Edita un apartamento existente en la base de datos.
+     * @param form Objeto que contiene la información del apartamento a editar.
+     * @return Un objeto ResponseVO que indica el resultado de la operación.
+     */
     public ResponseVO<Void> editApartment(EditHotelVO form){
         try {
             Apartment apartment = apartmentRepository.findByCode(form.getCode()).orElseThrow(() -> new IllegalArgumentException("No se encontró el hotel con el código proporcionado"));
-            apartment.setPhone_number(form.getPhoneNumber());
+            apartment.setPhoneNumber(form.getPhoneNumber());
             apartment.setEmail(form.getEmail());
             apartment.setWebsite(form.getWebsite());
             apartment.setDescription(form.getDescription());
             apartmentRepository.save(apartment);
-            return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Hotel editado con éxito.", 200, LocalDateTime.now()));
+            return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Apartamento editado con éxito.", 200, LocalDateTime.now()));
         } catch (Exception e) {
-            return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error al editar el hotel.", 404, LocalDateTime.now()));
+            System.out.println("editApartment: " + e.getMessage());
+            return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error al editar el apartamento.", 404, LocalDateTime.now()));
         }
     }
 }

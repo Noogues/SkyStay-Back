@@ -45,7 +45,7 @@ public class CityAdministrationService {
                 Country country = countryRepository.findByNameAndContinent(cityAddVO.getCountry().getName(), cityAddVO.getCountry().getContinent()).orElseGet(() -> {
                     Country newCountry = new Country();
                     newCountry.setName(cityAddVO.getCountry().getName());
-                    newCountry.setIso_code(cityAddVO.getCountry().getIso_code());
+                    newCountry.setIsoCode(cityAddVO.getCountry().getIso_code());
                     newCountry.setContinent(cityAddVO.getCountry().getContinent());
                     return countryRepository.save(newCountry);
                 });
@@ -69,6 +69,7 @@ public class CityAdministrationService {
 
             return ResponseVO.<Void>builder().messages(new MessageResponseVO("Paises y ciudades añadidas con exito", 200, LocalDateTime.now())).build();
         } catch (Exception e) {
+            System.out.println("addCityCountry: " + e.getMessage());
             return ResponseVO.<Void>builder().messages(new MessageResponseVO("Error al añadir paises y ciudades: " + e.getMessage(), 500, LocalDateTime.now())).build();
         }
     }
@@ -91,6 +92,7 @@ public class CityAdministrationService {
             data.setMessages(new MessageResponseVO("Ciudades recuperadas con éxito.", 200, LocalDateTime.now()));
             return data;
         } catch (Exception e) {
+            System.out.println("getCities: " + e.getMessage());
             return new ResponsePaginatedVO<>(new MessageResponseVO("Error al recuperar las ciudades.", 404, LocalDateTime.now()));
         }
     }
@@ -104,11 +106,12 @@ public class CityAdministrationService {
         try {
             Country newCountry = new Country();
             newCountry.setName(country.getName());
-            newCountry.setIso_code(country.getIso_code());
+            newCountry.setIsoCode(country.getIso_code());
             newCountry.setContinent(country.getContinent());
             countryRepository.save(newCountry);
             return ResponseVO.<Void>builder().messages(new MessageResponseVO("Pais añadido con exito", 200, LocalDateTime.now())).build();
         } catch (Exception e) {
+            System.out.println("addCountry: " + e.getMessage());
             return ResponseVO.<Void>builder().messages(new MessageResponseVO("Error al añadir pais: " + e.getMessage(), 500, LocalDateTime.now())).build();
         }
     }
@@ -125,6 +128,7 @@ public class CityAdministrationService {
             data.setMessages(new MessageResponseVO("Ciudades recuperadas con éxito.", 200, LocalDateTime.now()));
             return data;
         } catch (Exception e) {
+            System.out.println("getCitiesTable: " + e.getMessage());
             return new ResponsePaginatedVO<>(new MessageResponseVO("Error al recuperar las ciudades.", 404, LocalDateTime.now()));
         }
     }

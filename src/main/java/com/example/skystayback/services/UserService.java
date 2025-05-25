@@ -77,7 +77,7 @@ public class UserService implements UserDetailsService {
             emailService.sendEmail(user.getEmail(), "Validation code", EmailTemplateType.REGISTRATION, variables);
 
             user.setCode(verificationCode);
-            user.setValidation_date(LocalDateTime.now());
+            user.setValidationDate(LocalDateTime.now());
             userRepository.save(user);
         } catch (Exception e) {
             throw new RuntimeException("Error al enviar el correo de verificación: " + e.getMessage(), e);
@@ -167,7 +167,7 @@ public class UserService implements UserDetailsService {
                         "INVALID_CODE"));
 
         LocalDateTime now = LocalDateTime.now();
-        if (user.getValidation_date() == null || user.getValidation_date().plusMinutes(10).isBefore(now)) {
+        if (user.getValidationDate() == null || user.getValidationDate().plusMinutes(10).isBefore(now)) {
             throw new ApiException(
                     "Código expirado",
                     "El código de verificación ha expirado. Solicita uno nuevo.",
@@ -176,7 +176,7 @@ public class UserService implements UserDetailsService {
 
         user.setValidation(true);
         user.setCode(null);
-        user.setValidation_date(null);
+        user.setValidationDate(null);
         userRepository.save(user);
 
         // Devolver una respuesta exitosa
@@ -238,7 +238,7 @@ public class UserService implements UserDetailsService {
             emailService.sendEmail(user.getEmail(), "Validation code", EmailTemplateType.REGISTRATION, variables);
 
             user.setCode(verificationCode);
-            user.setValidation_date(LocalDateTime.now());
+            user.setValidationDate(LocalDateTime.now());
             userRepository.save(user);
         } catch (Exception e) {
             throw new RuntimeException("Error al enviar el correo de verificación: " + e.getMessage(), e);

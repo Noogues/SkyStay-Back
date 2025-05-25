@@ -2,6 +2,7 @@ package com.example.skystayback.services.admin;
 
 import com.example.skystayback.dtos.airports.AirportAdminVO;
 import com.example.skystayback.dtos.airports.AirportFormVO;
+import com.example.skystayback.dtos.airports.AirportReducedVO;
 import com.example.skystayback.dtos.common.*;
 import com.example.skystayback.models.Airport;
 import com.example.skystayback.models.City;
@@ -22,6 +23,11 @@ public class AirportsAdministrationService {
     private final CityRepository cityRepository;
     private final UserService userService;
 
+    /**
+     * Obtiene todos los aeropuertos disponibles en la base de datos.
+     * @param pageVO Objeto que contiene la información de paginación.
+     * @return Un objeto ResponsePaginatedVO que contiene la lista de aeropuertos y la información de paginación.
+     */
     public ResponsePaginatedVO<AirportAdminVO> getAirports(PageVO pageVO) {
         try {
             Page<AirportAdminVO> airports = airportRepository.getAllAirports(pageVO.toPageable());
@@ -34,11 +40,16 @@ public class AirportsAdministrationService {
             data.setMessages(new MessageResponseVO("Aeropuertos recuperados con éxito", 200, LocalDateTime.now()));
             return data;
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            System.out.println("getAirports: " + e.getMessage());
             return new ResponsePaginatedVO<>(new MessageResponseVO("Error al recuperar los aeropuertos:", 404, LocalDateTime.now()));
         }
     }
 
+    /**
+     * Crea un nuevo aeropuerto en la base de datos.
+     * @param airportAdminVO Objeto que contiene la información del aeropuerto a crear.
+     * @return Un objeto ResponseVO que indica el resultado de la operación.
+     */
     public ResponseVO<String> createAirport(AirportFormVO airportAdminVO) {
         try {
             Airport airport = new Airport();
@@ -56,10 +67,17 @@ public class AirportsAdministrationService {
             airportRepository.save(airport);
             return new ResponseVO<>(new DataVO<>(null), new MessageResponseVO("Aeropuerto creado con éxito", 200, LocalDateTime.now()));
         } catch (Exception e) {
+            System.out.println("createAirport: " + e.getMessage());
             return new ResponseVO<>(new DataVO<>(null), new MessageResponseVO("Error al crear el aeropuerto", 500, LocalDateTime.now()));
         }
     }
 
+    /**
+     * Actualiza un aeropuerto existente en la base de datos.
+     * @param code El código del aeropuerto a actualizar.
+     * @param airportAdminVO Objeto que contiene la información actualizada del aeropuerto.
+     * @return Un objeto ResponseVO que indica el resultado de la operación.
+     */
     public ResponseVO<String> updateAirport(String code, AirportFormVO airportAdminVO) {
         try {
             Airport airport = airportRepository.findByCode(code).orElseThrow(() -> new RuntimeException("Aeropuerto no encontrado"));
@@ -91,7 +109,25 @@ public class AirportsAdministrationService {
             airportRepository.save(airport);
             return new ResponseVO<>(new DataVO<>(null), new MessageResponseVO("Aeropuerto actualizado con éxito", 200, LocalDateTime.now()));
         } catch (Exception e) {
+            System.out.println("updateAirport: " + e.getMessage());
             return new ResponseVO<>(new DataVO<>(null), new MessageResponseVO("Error al actualizar el aeropuerto", 500, LocalDateTime.now()));
+        }
+    }
+
+    public ResponsePaginatedVO<AirportReducedVO> getAirportsReduced(PageVO pageVO) {
+        try {
+            Page<AirportReducedVO> airports = airportRepository.getAllAirportsReduced(pageVO.toPageable());
+            ResponsePaginatedVO<AirportReducedVO> data = new ResponsePaginatedVO<>();
+            data.setObjects(airports.getContent());
+            data.setHasNextPage(airports.hasNext());
+            data.setHasPreviousPage(airports.hasPrevious());
+            data.setCurrentPage(airports.getNumber());
+            data.setTotalPages(airports.getTotalPages());
+            data.setMessages(new MessageResponseVO("Aeropuertos recuperados con éxito", 200, LocalDateTime.now()));
+            return data;
+        } catch (Exception e) {
+            System.out.println("getAirportsReduced: " + e.getMessage());
+            return new ResponsePaginatedVO<>(new MessageResponseVO("Error al recuperar los aeropuertos:", 404, LocalDateTime.now()));
         }
     }
 }

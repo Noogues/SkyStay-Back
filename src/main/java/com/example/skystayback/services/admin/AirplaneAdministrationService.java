@@ -47,6 +47,7 @@ public class AirplaneAdministrationService {
             data.setMessages(new MessageResponseVO("Aviones recuperados con éxito.", 200, LocalDateTime.now()));
             return data;
         } catch (Exception e) {
+            System.out.println("getAllAirplanes: " + e.getMessage());
             return new ResponsePaginatedVO<>(new MessageResponseVO("Error al recuperar los aviones", 404, LocalDateTime.now()));
         }
     }
@@ -60,6 +61,7 @@ public class AirplaneAdministrationService {
             List<AirplaneTypeEnum> airplaneTypeEnumList = List.of(AirplaneTypeEnum.values());
             return new ResponseVO<>(new DataVO<>(airplaneTypeEnumList), new MessageResponseVO("Tipos de aviones recuperados con éxito.", 200, LocalDateTime.now()));
         } catch (Exception e) {
+            System.out.println("getAllAirplaneTypeEnum: " + e.getMessage());
             return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error al recuperar los tipos de aviones", 404, LocalDateTime.now()));
         }
     }
@@ -73,6 +75,7 @@ public class AirplaneAdministrationService {
             List<Status> statusEnumList = List.of(Status.values());
             return new ResponseVO<>(new DataVO<>(statusEnumList), new MessageResponseVO("Estados de aviones recuperados con éxito.", 200, LocalDateTime.now()));
         } catch (Exception e) {
+            System.out.println("getAllStatusEnum: " + e.getMessage());
             return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error al recuperar los estados de los aviones", 404, LocalDateTime.now()));
         }
     }
@@ -103,6 +106,7 @@ public class AirplaneAdministrationService {
             airplane = airplaneRepository.save(airplane);
             return new ResponseVO<>(new DataVO<>(airplane.getId()), new MessageResponseVO("Tipo de avión y avión creados con éxito.", 200, LocalDateTime.now()));
         } catch (Exception e) {
+            System.out.println("createAirplanePart1: " + e.getMessage());
             return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error al crear el tipo de avión y el avión", 404, LocalDateTime.now()));
         }
     }
@@ -165,6 +169,7 @@ public class AirplaneAdministrationService {
 
             return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Cabinas y asientos creados correctamente.", 200, LocalDateTime.now()));
         } catch (Exception e) {
+            System.out.println("createAirplanePart2: " + e.getMessage());
             return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error al crear las cabinas y asientos.", 404, LocalDateTime.now()));
         }
     }
@@ -178,6 +183,7 @@ public class AirplaneAdministrationService {
             List<SeatClass> seatClassEnumList = List.of(SeatClass.values());
             return new ResponseVO<>(new DataVO<>(seatClassEnumList), new MessageResponseVO("Clases de asientos recuperadas con éxito.", 200, LocalDateTime.now()));
         } catch (Exception e) {
+            System.out.println("getAllSeatClassEnum: " + e.getMessage());
             return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error al recuperar las clases de asientos", 404, LocalDateTime.now()));
         }
     }
@@ -200,6 +206,7 @@ public class AirplaneAdministrationService {
             }
             return new ResponseVO<>(new DataVO<>(finalist), new MessageResponseVO("Configuraciones de asientos recuperadas con éxito.", 200, LocalDateTime.now()));
         } catch (Exception e) {
+            System.out.println("getAllSeatConfiguration: " + e.getMessage());
             return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error al recuperar las configuraciones de asientos", 404, LocalDateTime.now()));
         }
     }
@@ -224,6 +231,7 @@ public class AirplaneAdministrationService {
 
             return new ResponseVO<>(new DataVO<>(list), new MessageResponseVO("Tipos de aviones recuperados con exito", 200, LocalDateTime.now()));
         } catch (Exception e) {
+            System.out.println("getAllAirplanesTypes: " + e.getMessage());
             return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error al recuperar los tipos de aviones", 404, LocalDateTime.now()));
         }
     }
@@ -243,6 +251,7 @@ public class AirplaneAdministrationService {
 
             return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Configuración de asientos creada con éxito.", 200, LocalDateTime.now()));
         } catch (Exception e) {
+            System.out.println("createSeatConfiguration: " + e.getMessage());
             return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error al crear la configuración de asientos", 404, LocalDateTime.now()));
         }
     }
@@ -269,6 +278,7 @@ public class AirplaneAdministrationService {
 
             return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Tipo de avión creado con éxito.", 200, LocalDateTime.now()));
         } catch (Exception e) {
+            System.out.println("createAirplanesTypes: " + e.getMessage());
             return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error al crear el tipo de avión", 404, LocalDateTime.now()));
         }
     }
@@ -283,6 +293,7 @@ public class AirplaneAdministrationService {
             AirplaneAllCodeVO airplane = airplaneRepository.findBasicInfoByCode(airplaneCode);
             return new ResponseVO<>(new DataVO<>(airplane), new MessageResponseVO("Información básica del avión recuperada con éxito.", 200, LocalDateTime.now()));
         } catch (Exception e) {
+            System.out.println("getBasicInfoByCode: " + e.getMessage());
             return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error al recuperar la información básica del avión.", 404, LocalDateTime.now()));
         }
     }
@@ -314,6 +325,7 @@ public class AirplaneAdministrationService {
 
             return new ResponseVO<>(new DataVO<>(cabinsWithSeats), new MessageResponseVO("Cabinas y asientos del avión recuperados con éxito.", 200, LocalDateTime.now()));
         } catch (Exception e) {
+            System.out.println("getCabinsWithSeatsByAirplaneCode: " + e.getMessage());
             return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error al recuperar las cabinas y asientos del avión.", 404, LocalDateTime.now()));
         }
     }
@@ -333,6 +345,7 @@ public class AirplaneAdministrationService {
 
             return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Estado del avión actualizado con éxito.", 200, LocalDateTime.now()));
         } catch (Exception e) {
+            System.out.println("updateAirplaneStatus: " + e.getMessage());
             return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error al actualizar el estado del avión.", 404, LocalDateTime.now()));
         }
     }
@@ -357,7 +370,25 @@ public class AirplaneAdministrationService {
 
             return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Imagen del avión añadida con éxito.", 200, LocalDateTime.now()));
         } catch (Exception e) {
+            System.out.println("addAirplaneImage: " + e.getMessage());
             return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error al añadir la imagen del avión.", 404, LocalDateTime.now()));
+        }
+    }
+
+    public ResponsePaginatedVO<AirplaneReducedVO> getAllAirplanesReduced(PageVO pageVO) {
+        try {
+            Page<AirplaneReducedVO> airplanePage = airplaneRepository.getAllAirplanesReduced(pageVO.toPageable());
+            ResponsePaginatedVO<AirplaneReducedVO> data = new ResponsePaginatedVO<>();
+            data.setObjects(airplanePage.getContent());
+            data.setHasNextPage(airplanePage.hasNext());
+            data.setHasPreviousPage(airplanePage.hasPrevious());
+            data.setCurrentPage(airplanePage.getNumber());
+            data.setTotalPages(airplanePage.getTotalPages());
+            data.setMessages(new MessageResponseVO("Aviones recuperados con éxito.", 200, LocalDateTime.now()));
+            return data;
+        } catch (Exception e) {
+            System.out.println("getAllAirplanesReduced: " + e.getMessage());
+            return new ResponsePaginatedVO<>(new MessageResponseVO("Error al recuperar los aviones", 404, LocalDateTime.now()));
         }
     }
 }

@@ -1,19 +1,40 @@
 package com.example.skystayback.services.admin;
 
 import com.example.skystayback.dtos.common.*;
+import com.example.skystayback.dtos.flights.FlightCreateVO;
+import com.example.skystayback.dtos.flights.FlightsDetailsVO;
 import com.example.skystayback.dtos.flights.FlightsTableVO;
+import com.example.skystayback.enums.FlightStatus;
+import com.example.skystayback.models.Airline;
+import com.example.skystayback.models.Airplane;
+import com.example.skystayback.models.Airport;
+import com.example.skystayback.models.Flight;
 import com.example.skystayback.repositories.*;
+import com.example.skystayback.services.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
-import java.time.LocalDateTime;
+
+import java.time.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
 
 @Service
 @AllArgsConstructor
 public class FlightsAdministrationService {
 
     private final FlightRepository flightRepository;
+    private final UserService userService;
+    private final AirlineRepository airlineRepository;
+    private final AirportRepository airportRepository;
+    private final AirplaneRepository airplaneRepository;
 
+    /**
+     * Recupera todos los vuelos paginados.
+     * @param pageVO Objeto que contiene la información de paginación.
+     * @return ResponsePaginatedVO con la lista de vuelos y metadatos de paginación.
+     */
     public ResponsePaginatedVO<FlightsTableVO> getAllFlights(PageVO pageVO) {
         try {
             Page<FlightsTableVO> flights = flightRepository.findAllFlights(pageVO.toPageable());
@@ -26,9 +47,164 @@ public class FlightsAdministrationService {
             data.setMessages(new MessageResponseVO("Hoteles recuperados con éxito.", 200, LocalDateTime.now()));
             return data;
         } catch (Exception e) {
+            System.out.println("getAllFlights: " + e.getMessage());
             return new ResponsePaginatedVO<>(new MessageResponseVO("Error al recuperar los hoteles", 404, LocalDateTime.now()));
         }
     }
 
+    /**
+     * Recupera los detalles de un vuelo específico basado en su código.
+     * @param code Código del vuelo a recuperar.
+     * @return ResponseVO con los detalles del vuelo o un mensaje de error.
+     */
+    public ResponseVO<FlightsDetailsVO> getDetailsByCode(String code) {
+        try {
+            FlightsDetailsVO flightDetails = flightRepository.findFlightDetailsByCode(code);
+            return new ResponseVO<>(new DataVO<>(flightDetails), new MessageResponseVO("Vuelo recuperado con éxito.", 200, LocalDateTime.now()));
+        } catch (Exception e) {
+            System.out.println("getDetailsByCode: " + e.getMessage());
+            return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error al recuperar el vuelo", 500, LocalDateTime.now()));
+        }
+    }
+
+    /**
+     * Crea un nuevo vuelo basado en la información proporcionada.
+     * @param form Objeto FlightCreateVO que contiene los detalles del vuelo a crear.
+     * @return ResponseVO con el resultado de la operación.
+     */
+    public ResponseVO<Void> createFlight(FlightCreateVO form){
+        try{
+            Flight flight = new Flight();
+            flight.setCode(userService.generateShortUuid());
+            flight.setStatus(FlightStatus.SCHEDULED);
+            flight.setDepartureTime(form.getDateTime().toLocalTime());
+            flight.setDateTime(form.getDateTime());
+            flight.setDateTimeArrival(form.getDateTimeArrival());
+            Airline airline = airlineRepository.findById(form.getAirlineId()).orElseThrow(() -> new IllegalArgumentException("Aerolinea no encontrada"));
+            flight.setAirline(airline);
+
+            Airport depatureAirport = airportRepository.findById(form.getDepartureAirportId()).orElseThrow(() -> new IllegalArgumentException("Aeropuerto de saliuda no encontrado"));
+            flight.setDepartureAirport(depatureAirport);
+
+            Airport arrivalAirport = airportRepository.findById(form.getArrivalAirportId()).orElseThrow(() -> new IllegalArgumentException("Aeropuerto de llegada no encontrado"));
+            flight.setArrivalAirport(arrivalAirport);
+
+            Airplane airplane = airplaneRepository.findById(form.getAirplaneId()).orElseThrow(() -> new IllegalArgumentException("Avion no encontrado"));
+            flight.setAirplane(airplane);
+
+            flightRepository.save(flight);
+            return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Vuelo creado con éxito", 200, LocalDateTime.now()));
+        }catch (Exception e) {
+            System.out.println("createFlight: " + e.getMessage());
+            return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error al crear el vuelo", 500, LocalDateTime.now()));
+        }
+    }
+
+    /**
+     * Genera vuelos aleatorios basados en las aerolíneas, aeropuertos y aviones disponibles.
+     * @param count Número de vuelos a generar.
+     * @return ResponseVO con el resultado de la operación.
+     */
+    public ResponseVO<Void> generateRandomFlights(int count) {
+        try {
+            List<Airline> airlines = airlineRepository.findAll();
+            List<Airport> airports = airportRepository.findAll();
+            List<Airplane> airplanes = airplaneRepository.findAll();
+
+            if (airlines.isEmpty() || airports.size() < 2 || airplanes.isEmpty()) {
+                return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Datos insuficientes para generar vuelos", 400, LocalDateTime.now()));
+            }
+
+            Random random = new Random(System.nanoTime()); // Semilla más variable
+            int createdCount = 0;
+
+            for (int i = 0; i < count; i++) {
+                // Seleccionar aleatoriamente entidades
+                Airline airline = airlines.get(random.nextInt(airlines.size()));
+                Airplane airplane = airplanes.get(random.nextInt(airplanes.size()));
+
+                // Barajar aeropuertos para obtener combinaciones más variadas
+                Collections.shuffle(airports, random);
+
+                Airport departureAirport = airports.getFirst();
+                Airport arrivalAirport = null;
+
+                for (int j = 1; j < airports.size(); j++) {
+                    if (!airports.get(j).getId().equals(departureAirport.getId())) {
+                        arrivalAirport = airports.get(j);
+                        break;
+                    }
+                }
+
+                // Si no hay llegada distinta, omitir este vuelo
+                if (arrivalAirport == null) {
+                    continue;
+                }
+
+                // Generar fecha aleatoria dentro de las próximas 4 semanas
+                LocalDate startDate = LocalDate.now();
+                LocalDate randomDate = startDate.plusDays(random.nextInt(28));
+                LocalTime randomTime = LocalTime.of(6 + random.nextInt(16), random.nextInt(60));
+                LocalDateTime departureTime = LocalDateTime.of(randomDate, randomTime);
+
+                // Duración de vuelo aleatoria entre 1 y 6 horas
+                int durationHours = 1 + random.nextInt(6);
+                LocalDateTime arrivalTime = departureTime.plusHours(durationHours);
+
+                // Crear objeto FlightCreateVO simulado
+                FlightCreateVO form = new FlightCreateVO();
+                form.setAirlineId(airline.getId());
+                form.setAirplaneId(airplane.getId());
+                form.setDepartureAirportId(departureAirport.getId());
+                form.setArrivalAirportId(arrivalAirport.getId());
+                form.setDateTime(departureTime);
+                form.setDateTimeArrival(arrivalTime);
+
+                // Verificar si ya existe un vuelo similar esa semana
+                if (isSimilarFlightExists(form)) {
+                    continue; // Evitar duplicados
+                }
+
+                // Crear el vuelo
+                createFlight(form);
+                createdCount++;
+            }
+
+            return new ResponseVO<>(new DataVO<>(), new MessageResponseVO(createdCount + " vuelos generados exitosamente", 200, LocalDateTime.now()));
+
+        } catch (Exception e) {
+            System.out.println("generateRandomFlights: " + e.getMessage());
+            return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error generando vuelos aleatorios", 500, LocalDateTime.now()));
+        }
+    }
+
+    /**
+     * Verifica si ya existe un vuelo similar en la misma semana.
+     * @param form Objeto FlightCreateVO que contiene los detalles del vuelo a verificar.
+     * @return true si existe un vuelo similar, false de lo contrario.
+     */
+    private boolean isSimilarFlightExists(FlightCreateVO form) {
+        LocalDate startOfWeek = form.getDateTime().with(DayOfWeek.MONDAY).toLocalDate();
+        LocalDate endOfWeek = startOfWeek.plusDays(6);
+
+        // Ajustar los parámetros para que coincidan con los tipos esperados
+        List<Flight> similarFlights = flightRepository.findSimilarFlights(
+                form.getAirlineId(),
+                form.getDepartureAirportId(),
+                form.getArrivalAirportId(),
+                form.getAirplaneId(),
+                startOfWeek.atStartOfDay(),
+                endOfWeek.atTime(LocalTime.MAX)
+        );
+
+        for (Flight flight : similarFlights) {
+            long hoursDiff = Duration.between(flight.getDateTime(), form.getDateTime()).abs().toHours();
+            if (hoursDiff < 2) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
 
