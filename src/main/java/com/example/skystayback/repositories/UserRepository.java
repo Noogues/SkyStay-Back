@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -44,7 +45,7 @@ public interface UserRepository  extends JpaRepository<User, Long> {
             "FROM OrderFlight o WHERE o.seatBooking.user.userCode = :userCode")
     Page<OrderFlightVO> findAllOrderFlightByUserId(@Param("userCode") String userCode, Pageable pageable);
 
-    @Query("SELECT new com.example.skystayback.dtos.user.OrderHotelVO(r.room_number, oh.roomBooking.room.roomConfiguration.roomConfiguration.type, oh.code, oh.amount, oh.discount, oh.status, oh.bill) " +
+    @Query("SELECT new com.example.skystayback.dtos.user.OrderHotelVO(r.roomNumber, oh.roomBooking.room.roomConfiguration.roomConfiguration.type, oh.code, oh.amount, oh.discount, oh.status, oh.bill) " +
             "FROM OrderHotel oh JOIN oh.roomBooking.room r " +
             "WHERE oh.roomBooking.user.userCode = :userCode")
     Page<OrderHotelVO> findAllOrderHotelByUserId(@Param("userCode") String userCode, Pageable pageable);
@@ -58,5 +59,8 @@ public interface UserRepository  extends JpaRepository<User, Long> {
     
     Optional<User> findTopByEmailAndCode(String email, Integer code);
 
+    @Query("SELECT new com.example.skystayback.dtos.user.UserAdminVO(u.userCode, u.name, u.lastName, u.email, u.nif, u.phone, u.rol) " +
+            "FROM User u ORDER BY u.id DESC")
+    List<UserAdminVO> getLast5User();
 }
 

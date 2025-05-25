@@ -1,6 +1,7 @@
 package com.example.skystayback.repositories;
 
 import com.example.skystayback.dtos.airplanes.AirplaneAllCodeVO;
+import com.example.skystayback.dtos.airplanes.AirplaneReducedVO;
 import com.example.skystayback.dtos.airplanes.AirplaneShowVO;
 import com.example.skystayback.models.Airplane;
 import org.springframework.data.domain.Page;
@@ -56,4 +57,13 @@ public interface AirplaneRepository extends JpaRepository<Airplane, Long> {
     AirplaneAllCodeVO findBasicInfoByCode(String airplaneCode);
 
     Optional<Airplane> findByCode(String code);
+
+    @Query(value = """
+        SELECT new com.example.skystayback.dtos.airplanes.AirplaneReducedVO(
+            a.id,
+            a.model
+        )
+        FROM Airplane a
+    """)
+    Page<AirplaneReducedVO> getAllAirplanesReduced(Pageable pageable);
 }

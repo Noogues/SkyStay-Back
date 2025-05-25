@@ -17,11 +17,12 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 
     @Query(value = """
              SELECT new com.example.skystayback.dtos.hotel.RoomVO(
-                r.room_number as roomNumber,\s
+                r.roomNumber as roomNumber,\s
                 r.state
              )
              FROM RoomConfiguration rc
-             LEFT JOIN Room r ON r.roomConfiguration.id = rc.id
+             JOIN RoomConfigurationHotel rch ON rch.roomConfiguration.id = rc.id
+             LEFT JOIN Room r ON r.roomConfiguration.id = rch.id
              WHERE rc.id = :roomConfigurationId
             \s""")
     List<RoomVO> findAllRoomsByHotelCodeAndRoomConfigurationId(@Param("roomConfigurationId") Long roomConfigurationId);

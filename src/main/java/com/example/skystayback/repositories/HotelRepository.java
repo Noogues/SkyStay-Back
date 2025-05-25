@@ -2,7 +2,7 @@ package com.example.skystayback.repositories;
 
 
 import com.example.skystayback.dtos.hotel.*;
-import com.example.skystayback.enums.RoomType;
+
 import com.example.skystayback.models.Hotel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,7 +17,7 @@ import java.util.Optional;
 public interface HotelRepository extends JpaRepository<Hotel, Long> {
 
 
-    @Query("SELECT new com.example.skystayback.dtos.hotel.HotelAdminVO(h.code, h.name, h.address, h.postal_code, h.phone_number, h.email, h.website, h.description, h.stars, i.url, " + "new com.example.skystayback.dtos.city.CityVO(c.name, new com.example.skystayback.dtos.city.CountryVO(c.country.name))) FROM Hotel h JOIN h.city c LEFT JOIN HotelImage hi ON hi.hotel.id = h.id LEFT JOIN Image i ON hi.image.id = i.id")
+    @Query("SELECT new com.example.skystayback.dtos.hotel.HotelAdminVO(h.code, h.name, h.address, h.postalCode, h.phoneNumber, h.email, h.website, h.description, h.stars, i.url, " + "new com.example.skystayback.dtos.city.CityVO(c.name, new com.example.skystayback.dtos.city.CountryVO(c.country.name))) FROM Hotel h JOIN h.city c LEFT JOIN HotelImage hi ON hi.hotel.id = h.id LEFT JOIN Image i ON hi.image.id = i.id")
     Page<HotelAdminVO> findAllHotels(Pageable pageable);
 
     Optional<Hotel> findByCode(String code);
@@ -25,7 +25,7 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
 
     @Query("""
                 SELECT new com.example.skystayback.dtos.hotel.ShowHotelDetails(
-                    h.id, h.name, h.address, h.postal_code, h.phone_number, h.email, h.website, h.stars, h.description,
+                    h.id, h.name, h.address, h.postalCode, h.phoneNumber, h.email, h.website, h.stars, h.description,
                     c.name, c.country.name, i.url, null
                 )
                 FROM Hotel h

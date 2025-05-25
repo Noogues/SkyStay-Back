@@ -20,7 +20,7 @@ public interface ApartmentRepository extends JpaRepository<Apartment, Long> {
 
 
 
-    @Query("SELECT new com.example.skystayback.dtos.hotel.HotelAdminVO(a.code, a.name, a.address, a.postal_code, a.phone_number, a.email, a.website, a.description, a.stars, i.url, " + "new com.example.skystayback.dtos.city.CityVO(c.name, new com.example.skystayback.dtos.city.CountryVO(c.country.name))) FROM Apartment a JOIN a.city c LEFT JOIN ApartmentImage ai ON ai.apartment.id = a.id LEFT JOIN Image i ON ai.image.id = i.id")
+    @Query("SELECT new com.example.skystayback.dtos.hotel.HotelAdminVO(a.code, a.name, a.address, a.postalCode, a.phoneNumber, a.email, a.website, a.description, a.stars, i.url, " + "new com.example.skystayback.dtos.city.CityVO(c.name, new com.example.skystayback.dtos.city.CountryVO(c.country.name))) FROM Apartment a JOIN a.city c LEFT JOIN ApartmentImage ai ON ai.apartment.id = a.id LEFT JOIN Image i ON ai.image.id = i.id")
     Page<HotelAdminVO> findAllApartments(Pageable pageable);
 
     Optional<Apartment> findByCode(String code);
@@ -28,7 +28,7 @@ public interface ApartmentRepository extends JpaRepository<Apartment, Long> {
 
     @Query("""
                 SELECT new com.example.skystayback.dtos.hotel.ShowHotelDetails(
-                    a.id, a.name, a.address, a.postal_code, a.phone_number, a.email, a.website, a.stars, a.description,
+                    a.id, a.name, a.address, a.postalCode, a.phoneNumber, a.email, a.website, a.stars, a.description,
                     c.name, c.country.name, i.url, null
                 )
                 FROM Apartment a

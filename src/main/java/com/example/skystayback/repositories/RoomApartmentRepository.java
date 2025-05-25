@@ -16,7 +16,7 @@ public interface RoomApartmentRepository extends JpaRepository<RoomApartment, Lo
 
     @Query(value = """
              SELECT new com.example.skystayback.dtos.hotel.RoomVO(
-                ra.room_number as roomNumber,
+                ra.roomNumber as roomNumber,
                 ra.state
              )
              FROM RoomApartment ra
