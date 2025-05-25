@@ -21,7 +21,7 @@ public class AdditionalBaggage {
     private Float weight;
 
     @Column(name = "extra_amount", nullable = false, scale = 2)
-    private Float extra_amount;
+    private Float extraAmount;
 
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     @JoinColumn(name = "airline_id")

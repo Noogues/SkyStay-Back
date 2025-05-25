@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Data
 @Entity
@@ -20,17 +21,17 @@ public class Flight {
     private String code;
 
     @Column(name = "departure_time", nullable = false)
-    private LocalDateTime departure_time;
+    private LocalTime departureTime;
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.ORDINAL)
     private FlightStatus status;
 
     @Column(name = "date_time", nullable = false)
-    private LocalDateTime date_time;
+    private LocalDateTime dateTime;
 
     @Column(name = "date_time_arrival", nullable = false)
-    private LocalDateTime date_time_arrival;
+    private LocalDateTime dateTimeArrival;
 
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     @JoinColumn(name = "airline_id")
@@ -38,11 +39,11 @@ public class Flight {
 
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     @JoinColumn(name = "departure_airport_id")
-    private Airport depature_airport;
+    private Airport departureAirport;
 
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     @JoinColumn(name = "arrival_airport_id")
-    private Airport arrival_airport;
+    private Airport arrivalAirport;
 
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     @JoinColumn(name = "airplane_id")

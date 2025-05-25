@@ -14,7 +14,7 @@ public class Room {
     private Long id;
 
     @Column(name = "room_number", nullable = false)
-    private Integer room_number;
+    private Integer roomNumber;
 
     @Column(name = "state", nullable = false)
     private Boolean state;

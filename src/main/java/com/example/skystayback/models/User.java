@@ -69,7 +69,7 @@ public class User implements UserDetails {
     private Integer code;
 
     @Column(name = "validation_date")
-    private LocalDateTime validation_date;
+    private LocalDateTime validationDate;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

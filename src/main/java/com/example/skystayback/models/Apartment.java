@@ -25,10 +25,10 @@ public class Apartment {
     private String address;
 
     @Column(name = "postal_code", nullable = false, length = 10)
-    private String postal_code;
+    private String postalCode;
 
     @Column(name = "phone_number", nullable = false, length = 20)
-    private String phone_number;
+    private String phoneNumber;
 
     @Column(name = "email", nullable = false, length = 60)
     private String email;

@@ -17,15 +17,6 @@ public class SeatBooking {
     @Column(name = "id", nullable = false, unique = true)
     private Long id;
 
-    @Column(name = "start_date", nullable = false)
-    private LocalDate startDate;
-
-    @Column(name = "end_date", nullable = false)
-    private LocalDate endDate;
-
-    @Column(name = "status", nullable = false)
-    private StatusRoomBooking status;
-
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     @JoinColumn(name = "flight_id")
     private Flight flight;

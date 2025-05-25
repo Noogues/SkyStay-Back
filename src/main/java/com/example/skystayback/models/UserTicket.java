@@ -23,17 +23,17 @@ public class UserTicket {
     private String name;
 
     @Column(name = "last_name", nullable = false, length = 150)
-    private String last_name;
+    private String lastName;
 
     @Column(name = "birth_date", nullable = false)
-    private LocalDate birth_date;
+    private LocalDate birthDate;
 
     @Column(name = "price", nullable = false, scale = 2)
     private Float price;
 
     @Column(name = "booking_status", nullable = false)
     @Enumerated(EnumType.ORDINAL)
-    private BookingStatus booking_status;
+    private BookingStatus bookingStatus;
 
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     @JoinColumn(name = "seat_id")

@@ -20,7 +20,7 @@ public class Airline {
     @Column(name = "name", nullable = false, length = 100)
     private String name;
 
-    @Column(name = "image", nullable = false)
+    @Column(name = "image")
     private String image;
 
     @Column(name = "phone", nullable = false, length = 20, unique = true)
