@@ -18,6 +18,7 @@ public class AirplaneShowVO {
     private Integer yearOfManufacture;
     private AirplaneTypeEnum type;
     private Status status;
+    private String image;
     private AirplaneTypeVO airplaneType;
 
 }

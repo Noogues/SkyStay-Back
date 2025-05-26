@@ -1,9 +1,11 @@
 package com.example.skystayback.models;
 
+import com.example.skystayback.enums.StatusRoomBooking;
 import jakarta.persistence.*;
 import lombok.Data;
 
 import java.math.BigInteger;
+import java.time.LocalDate;
 
 @Data
 @Entity

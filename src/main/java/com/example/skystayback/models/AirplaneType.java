@@ -29,9 +29,4 @@ public class AirplaneType {
     @Column(name = "capacity", nullable = false)
     private Integer capacity;
 
-    @OneToMany(mappedBy = "airplaneType")
-    private List<Airplane> airplanes = new ArrayList<>();
-
-
-
 }

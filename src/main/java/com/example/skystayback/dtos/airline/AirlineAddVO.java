@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class AirlineAddVO {
     private String name;
-    private String image;
     private String phone;
     private String email;
     private String website;

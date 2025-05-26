@@ -1,10 +1,7 @@
 package com.example.skystayback.models;
 
-import com.example.skystayback.enums.RoomType;
 import jakarta.persistence.*;
 import lombok.Data;
-
-import java.math.BigInteger;
 
 @Data
 @Entity
@@ -17,15 +14,12 @@ public class Room {
     private Long id;
 
     @Column(name = "room_number", nullable = false)
-    private Integer room_number;
+    private Integer roomNumber;
 
-    @Column(name = "capacity", nullable = false)
-    private Integer capacity;
-
-    @Column(name = "room_type", nullable = false)
-    private RoomType type;
+    @Column(name = "state", nullable = false)
+    private Boolean state;
 
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-    @JoinColumn(name = "hotel_id")
-    private Hotel hotel;
+    @JoinColumn(name = "room_configuration_hotel_id", nullable = false)
+    private RoomConfigurationHotel roomConfiguration;
 }

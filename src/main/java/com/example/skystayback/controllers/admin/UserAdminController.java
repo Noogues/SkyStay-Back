@@ -22,9 +22,12 @@ public class UserAdminController {
     }
 
     @GetMapping("/all")
-    public ResponsePaginatedVO<UserAdminVO> getUsers(@RequestParam(defaultValue = "30") Integer limit, @RequestParam(defaultValue = "0") Integer page) {
+    public ResponsePaginatedVO<UserAdminVO> getUsers(
+            @RequestParam(defaultValue = "30") Integer limit,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(required = false) String search) {
         PageVO pageVO = new PageVO(limit, page);
-        return userService.getUsers(pageVO);
+        return userService.getUsers(pageVO, search);
     }
 
     @GetMapping("/{userCode}/airline-ratings")
