@@ -51,6 +51,19 @@ public class UserController {
         return userService.resendCode(email);
     }
 
+    @PostMapping("/send-code-password")
+    public ResponseVO<MessageResponseVO> sendPasswordCode(@RequestBody Map<String, Object> request) {
+        String email = (String) request.get("email");
+        return userService.sendPasswordCode(email);
+    }
+
+    @PostMapping("/change-password")
+    public ResponseVO<MessageResponseVO> changePassword(@RequestBody Map<String, Object> request) {
+        String email = (String) request.get("email");
+        String password = (String) request.get("password");
+        return userService.resetPassword(email, password);
+    }
+
     @PostMapping("/send-test-email")
     public String sendTestEmail() {
         try {
