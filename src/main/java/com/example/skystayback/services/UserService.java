@@ -325,7 +325,7 @@ public class UserService implements UserDetailsService {
             emailService.sendEmail(user.getEmail(), "Validation code", EmailTemplateType.RESET_PASSWORD, variables);
 
             user.setCode(verificationCode);
-            user.setValidation_date(LocalDateTime.now());
+            user.setValidationDate(LocalDateTime.now());
             userRepository.save(user);
         } catch (Exception e) {
             throw new RuntimeException("Error al enviar el correo de verificación: " + e.getMessage(), e);
