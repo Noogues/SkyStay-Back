@@ -1,6 +1,6 @@
 package com.example.skystayback.controllers.accommodation;
 
-import com.example.skystayback.dtos.common.ResponseVO;
+import com.example.skystayback.dtos.common.*;
 import com.example.skystayback.dtos.common.AccommodationResponseVO;
 import com.example.skystayback.services.accommodation.GlobalService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,5 +34,10 @@ public class Global {
     @GetMapping("/cities")
     public List<String> getCities() {
         return globalService.getAllCities();
+    }
+
+    @GetMapping("/destinations")
+    public List<DestinationVO> getDestinations() {
+        return globalService.getTopDestinations();
     }
 }
