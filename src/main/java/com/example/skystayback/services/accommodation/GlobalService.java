@@ -1,17 +1,17 @@
 package com.example.skystayback.services.accommodation;
 
-import com.example.skystayback.dtos.common.DataVO;
-import com.example.skystayback.dtos.common.MessageResponseVO;
-import com.example.skystayback.dtos.common.ResponseVO;
-import com.example.skystayback.dtos.common.AccommodationResponseVO;
-import com.example.skystayback.dtos.common.RoomDetailsVO;
+import com.example.skystayback.dtos.common.*;
 import com.example.skystayback.repositories.HotelRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class GlobalService {
@@ -47,5 +47,26 @@ public class GlobalService {
 
     public List<String> getAllCities() {
         return hotelRepository.findAllCities();
+    }
+
+    public List<DestinationVO> getTopDestinations() {
+        Pageable limit = PageRequest.of(0, 3);
+        List<DestinationVO> hotels = hotelRepository.findRandomHotels(limit);
+        List<DestinationVO> apartments = hotelRepository.findRandomApartments(limit);
+
+        List<DestinationVO> combined = new ArrayList<>();
+        combined.addAll(hotels);
+        combined.addAll(apartments);
+
+        if (combined.size() < 6) {
+            if (hotels.size() < 3) {
+                combined.addAll(hotelRepository.findRandomHotels(PageRequest.of(0, 3 - combined.size())));
+            }
+            if (apartments.size() < 3 && combined.size() < 3) {
+                combined.addAll(hotelRepository.findRandomApartments(PageRequest.of(0, 3 - combined.size())));
+            }
+        }
+
+        return combined.stream().limit(6).collect(Collectors.toList());
     }
 }
