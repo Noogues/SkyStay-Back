@@ -10,8 +10,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import com.example.skystayback.dtos.common.AccommodationResponseVO;
+import com.example.skystayback.dtos.common.RoomDetailsVO;
 import java.util.Optional;
-
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface HotelRepository extends JpaRepository<Hotel, Long> {
@@ -35,4 +39,54 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
                 WHERE h.code = :hotelCode
             """)
     ShowHotelDetails findHotelDetailsByCode(@Param("hotelCode") String hotelCode);
+
+    @Query("""
+   SELECT new com.example.skystayback.dtos.common.AccommodationResponseVO(
+       h.id,
+       h.name,
+       h.stars,
+       h.address,
+       h.phoneNumber,
+       h.email,
+       h.website,
+       h.description,
+       c.name
+   )
+   FROM Hotel h
+   JOIN h.city c
+   WHERE c.name = :destination
+   """)
+    List<AccommodationResponseVO> findHotelsByDestination(@Param("destination") String destination);
+
+    @Query("""
+SELECT new com.example.skystayback.dtos.common.RoomDetailsVO(
+    rch.id,
+    rch.roomConfiguration.capacity,
+    rch.roomConfiguration.type,
+    COUNT(r.id)
+)
+FROM Room r
+JOIN r.roomConfiguration rch
+JOIN rch.hotel h
+LEFT JOIN RoomBooking rb ON rb.room.id = r.id
+AND rb.status IN ('CONFIRMED', 'CHECKED_IN', 'PENDING')
+AND (:checkOut IS NULL OR rb.startDate < :checkOut)
+AND (:checkIn IS NULL OR rb.endDate > :checkIn)
+WHERE h.id = :hotelId
+AND rb.id IS NULL
+GROUP BY rch.id
+HAVING rch.roomConfiguration.capacity >= (:adults + :children)
+AND COUNT(r.id) >= :rooms
+""")
+    List<RoomDetailsVO> findAvailableRoomsByHotel(
+            @Param("hotelId") Long hotelId,
+            @Param("checkIn") LocalDate checkIn,
+            @Param("checkOut") LocalDate checkOut,
+            @Param("rooms") Integer rooms,
+            @Param("adults") Integer adults,
+            @Param("children") Integer children
+    );
+
+    @Query("SELECT DISTINCT c.name FROM City c")
+    List<String> findAllCities();
 }
