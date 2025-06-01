@@ -1,6 +1,7 @@
 package com.example.skystayback.repositories;
 
 
+import com.example.skystayback.dtos.common.*;
 import com.example.skystayback.dtos.hotel.*;
 
 import com.example.skystayback.models.Hotel;
@@ -89,4 +90,44 @@ AND COUNT(r.id) >= :rooms
 
     @Query("SELECT DISTINCT c.name FROM City c")
     List<String> findAllCities();
+
+    @Query("""
+SELECT new com.example.skystayback.dtos.common.DestinationVO(h.id, h.name, i.url)
+FROM Hotel h
+LEFT JOIN HotelImage hi ON hi.hotel.id = h.id
+LEFT JOIN Image i ON hi.image.id = i.id
+JOIN HotelRating hr ON hr.hotel.id = h.id
+GROUP BY h.id, h.name, i.url
+ORDER BY AVG(hr.rating) DESC
+""")
+    List<DestinationVO> findTopRatedHotels(Pageable pageable);
+
+    @Query("""
+SELECT new com.example.skystayback.dtos.common.DestinationVO(a.id, a.name, i.url)
+FROM Apartment a
+LEFT JOIN ApartmentImage ai ON ai.apartment.id = a.id
+LEFT JOIN Image i ON ai.image.id = i.id
+JOIN ApartmentRating ar ON ar.apartment.id = a.id
+GROUP BY a.id, a.name, i.url
+ORDER BY AVG(ar.rating) DESC
+""")
+    List<DestinationVO> findTopRatedApartments(Pageable pageable);
+
+    @Query("""
+SELECT new com.example.skystayback.dtos.common.DestinationVO(h.id, h.name, i.url)
+FROM Hotel h
+LEFT JOIN HotelImage hi ON hi.hotel.id = h.id
+LEFT JOIN Image i ON hi.image.id = i.id
+GROUP BY h.id, h.name, i.url
+""")
+    List<DestinationVO> findRandomHotels(Pageable pageable);
+
+    @Query("""
+SELECT new com.example.skystayback.dtos.common.DestinationVO(a.id, a.name, i.url)
+FROM Apartment a
+LEFT JOIN ApartmentImage ai ON ai.apartment.id = a.id
+LEFT JOIN Image i ON ai.image.id = i.id
+GROUP BY a.id, a.name, i.url
+""")
+    List<DestinationVO> findRandomApartments(Pageable pageable);
 }
