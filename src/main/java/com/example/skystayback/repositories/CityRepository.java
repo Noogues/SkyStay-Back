@@ -1,5 +1,6 @@
 package com.example.skystayback.repositories;
 
+import com.example.skystayback.dtos.city.CityImageVO;
 import com.example.skystayback.dtos.city.CityTableVO;
 import com.example.skystayback.dtos.city.CityVO;
 import com.example.skystayback.models.City;
@@ -23,4 +24,10 @@ public interface CityRepository extends JpaRepository<City, Long> {
 
     @Query("SELECT new com.example.skystayback.dtos.city.CityTableVO(c.id, c.name) FROM City c")
     Page<CityTableVO> getAllCitiesTable(Pageable pageable);
+
+    @Query("SELECT new com.example.skystayback.dtos.city.CityImageVO(c.name, i.url) " +
+            "FROM City c " +
+            "JOIN CityImage ci ON c.id = ci.city.id " +
+            "JOIN Image i ON ci.image.id = i.id ")
+    List<CityImageVO> allCitiesImages();
 }
