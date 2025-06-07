@@ -13,8 +13,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AccommodationResponseVO {
-    private Long hotelId;
-    private String hotelName;
+    private Long id;
+    private String name;
     private Integer stars;
     private String address;
     private String phoneNumber;
@@ -23,10 +23,12 @@ public class AccommodationResponseVO {
     private String description;
     private String cityName;
     private List<RoomDetailsVO> availableRooms;
+    private String img;
+    private String accommodationType;
 
-    public AccommodationResponseVO(Long hotelId, String hotelName, Integer stars, String address, String phoneNumber, String email, String website, String description, String cityName) {
-        this.hotelId = hotelId;
-        this.hotelName = hotelName;
+    public AccommodationResponseVO(Long id, String name, Integer stars, String address, String phoneNumber, String email, String website, String description, String cityName, String imageUrl) {
+        this.id = id;
+        this.name = name;
         this.stars = stars;
         this.address = address;
         this.phoneNumber = phoneNumber;
@@ -34,5 +36,6 @@ public class AccommodationResponseVO {
         this.website = website;
         this.description = description;
         this.cityName = cityName;
+        this.img = imageUrl;
     }
 }
