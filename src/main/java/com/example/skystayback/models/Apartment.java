@@ -45,4 +45,7 @@ public class Apartment {
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     @JoinColumn(name = "city_id")
     private City city;
+
+    @Column(name= "amenities")
+    private String amenities;
 }
