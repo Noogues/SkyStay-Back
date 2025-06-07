@@ -4,10 +4,8 @@ import com.example.skystayback.dtos.common.*;
 import com.example.skystayback.dtos.common.AccommodationResponseVO;
 import com.example.skystayback.services.accommodation.GlobalService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -26,9 +24,10 @@ public class Global {
             @RequestParam(required = false) LocalDate checkOut,
             @RequestParam(required = false, defaultValue = "1") Integer adults,
             @RequestParam(required = false, defaultValue = "0") Integer children,
-            @RequestParam(required = false, defaultValue = "1") Integer rooms) {
+            @RequestParam(required = false, defaultValue = "1") Integer rooms,
+            @RequestParam(required = false) String type) {
 
-        return globalService.searchAccommodations(destination, checkIn, checkOut, adults, children, rooms);
+        return globalService.searchAccommodations(destination, checkIn, checkOut, adults, children, rooms, type);
     }
 
     @GetMapping("/cities")
@@ -39,5 +38,22 @@ public class Global {
     @GetMapping("/destinations")
     public List<DestinationVO> getDestinations() {
         return globalService.getTopDestinations();
+    }
+
+    @GetMapping("/destinations/most-rated")
+    public List<DestinationVO> getMostRatedDestinations() {
+        return globalService.getTopRatedDestinations();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseVO<AccommodationDetailVO> getAccommodationDetail(
+            @PathVariable Long id,
+            @RequestParam(required = false) LocalDate checkIn,
+            @RequestParam(required = false) LocalDate checkOut,
+            @RequestParam(required = false) Integer adults,
+            @RequestParam(required = false) Integer children,
+            @RequestParam(required = false) Integer rooms) {
+
+        return globalService.getAccommodationDetail(id, checkIn, checkOut, adults, children, rooms);
     }
 }
