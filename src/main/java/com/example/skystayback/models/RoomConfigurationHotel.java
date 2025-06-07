@@ -23,4 +23,10 @@ public class RoomConfigurationHotel {
 
     @Column(name = "url")
     private String url;
+
+    @Column(name = "amount")
+    private Integer amount;
+
+    @Column(name = "price")
+    private Double price;
 }
