@@ -28,16 +28,9 @@ public class UserTicket {
     @Column(name = "birth_date", nullable = false)
     private LocalDate birthDate;
 
-    @Column(name = "price", nullable = false, scale = 2)
-    private Float price;
-
     @Column(name = "booking_status", nullable = false)
     @Enumerated(EnumType.ORDINAL)
     private BookingStatus bookingStatus;
-
-    @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-    @JoinColumn(name = "seat_id")
-    private SeatBooking seat;
 
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     @JoinColumn(name = "additional_baggage_id")

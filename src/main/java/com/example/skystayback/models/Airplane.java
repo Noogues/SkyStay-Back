@@ -39,4 +39,7 @@ public class Airplane {
     @JoinColumn(name = "airplane_type_id", nullable = false)
     private AirplaneType airplaneType;
 
+    @ManyToOne
+    @JoinColumn(name = "airline_id", nullable = false)
+    private Airline airline;
 }
