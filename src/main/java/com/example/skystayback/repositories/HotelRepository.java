@@ -52,7 +52,8 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
                 h.website,
                 h.description,
                 c.name,
-                (SELECT MIN(i.url) FROM HotelImage hi JOIN Image i ON hi.image.id = i.id WHERE hi.hotel.id = h.id)
+                (SELECT MIN(i.url) FROM HotelImage hi JOIN Image i ON hi.image.id = i.id WHERE hi.hotel.id = h.id),
+                h.amenities
             )
             FROM Hotel h
             JOIN h.city c
@@ -196,7 +197,8 @@ WHERE hi.hotel.id = :hotelId
             a.website,
             a.description,
             c.name,
-            (SELECT MIN(i.url) FROM ApartmentImage ai JOIN Image i ON ai.image.id = i.id WHERE ai.apartment.id = a.id)
+            (SELECT MIN(i.url) FROM ApartmentImage ai JOIN Image i ON ai.image.id = i.id WHERE ai.apartment.id = a.id),
+            a.amenities
         )
         FROM Apartment a
         JOIN a.city c
