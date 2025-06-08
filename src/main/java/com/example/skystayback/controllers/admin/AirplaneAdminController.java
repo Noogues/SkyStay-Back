@@ -1,14 +1,17 @@
 package com.example.skystayback.controllers.admin;
 
+import com.example.skystayback.dtos.airline.AirlineReducedVO;
 import com.example.skystayback.dtos.airplanes.*;
 import com.example.skystayback.dtos.common.AddImageVO;
 import com.example.skystayback.dtos.common.PageVO;
 import com.example.skystayback.dtos.common.ResponsePaginatedVO;
 import com.example.skystayback.dtos.common.ResponseVO;
+import com.example.skystayback.dtos.flights.CabinsVO;
 import com.example.skystayback.enums.AirplaneTypeEnum;
 import com.example.skystayback.enums.SeatClass;
 import com.example.skystayback.enums.Status;
 import com.example.skystayback.services.admin.AirplaneAdministrationService;
+import com.example.skystayback.services.admin.FlightsAdministrationService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +25,9 @@ public class AirplaneAdminController {
 
     @Autowired
     private final AirplaneAdministrationService airplaneAdminService;
+
+    @Autowired
+    private final FlightsAdministrationService flightsService;
 
     @GetMapping("/all")
     public ResponsePaginatedVO<AirplaneShowVO> getAllAirplanes(@RequestParam(defaultValue = "30") Integer limit, @RequestParam(defaultValue = "1") Integer page) {
@@ -67,6 +73,11 @@ public class AirplaneAdminController {
         return airplaneAdminService.getAllAirplanesTypes();
     }
 
+    @GetMapping("/airlines/all")
+    public ResponseVO<List<AirlineReducedVO>> getAllAirlines() {
+        return airplaneAdminService.getAllAirlines();
+    }
+
     @PostMapping("/airplanes-types/create")
     public ResponseVO<Void> createAirplanesTypes(@RequestBody CreateAirplanesTypesVO airplanesTypes) {
         return airplaneAdminService.createAirplanesTypes(airplanesTypes);
@@ -101,5 +112,10 @@ public class AirplaneAdminController {
     @PostMapping("/add/image")
     public ResponseVO<Void> addAirplaneImage(@RequestBody AddImageVO airplaneImage) {
         return airplaneAdminService.addAirplaneImage(airplaneImage);
+    }
+
+    @GetMapping("/cabin/info/{airplaneId}")
+    public ResponseVO<List<CabinsVO>> getCabinsByAirplaneCode(@PathVariable Long airplaneId) {
+        return flightsService.getCabinsInfo(airplaneId);
     }
 }
