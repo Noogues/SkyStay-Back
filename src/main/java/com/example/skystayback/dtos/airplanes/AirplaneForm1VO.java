@@ -12,6 +12,7 @@ public class AirplaneForm1VO {
     // Airplane_type:
     private Long airplane_type_id;
 
+    private Long airline_id;
 
     // Airplane (necesita airplane_type_id):
     private String model;

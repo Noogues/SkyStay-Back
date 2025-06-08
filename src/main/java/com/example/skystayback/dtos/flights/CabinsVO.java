@@ -1,5 +1,6 @@
-package com.example.skystayback.dtos.airplanes;
+package com.example.skystayback.dtos.flights;
 
+import com.example.skystayback.enums.SeatClass;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -7,8 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SeatVO {
+public class CabinsVO {
     private Long id;
-    private String seatRow;
-    private String seatColumn;
+    private SeatClass seatClass;
 }

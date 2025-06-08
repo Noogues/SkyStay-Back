@@ -20,4 +20,5 @@ public class AirplaneAllCodeVO {
     private String airplaneType_manufacturer;
     private Integer airplaneType_capacity;
 
+    private String airlineName;
 }
