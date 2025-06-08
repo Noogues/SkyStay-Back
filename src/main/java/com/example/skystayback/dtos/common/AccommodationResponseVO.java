@@ -25,8 +25,9 @@ public class AccommodationResponseVO {
     private List<RoomDetailsVO> availableRooms;
     private String img;
     private String accommodationType;
+    private String amenities;
 
-    public AccommodationResponseVO(Long id, String name, Integer stars, String address, String phoneNumber, String email, String website, String description, String cityName, String imageUrl) {
+    public AccommodationResponseVO(Long id, String name, Integer stars, String address, String phoneNumber, String email, String website, String description, String cityName, String imageUrl, String amenities) {
         this.id = id;
         this.name = name;
         this.stars = stars;
@@ -37,5 +38,6 @@ public class AccommodationResponseVO {
         this.description = description;
         this.cityName = cityName;
         this.img = imageUrl;
+        this.amenities = amenities;
     }
 }
