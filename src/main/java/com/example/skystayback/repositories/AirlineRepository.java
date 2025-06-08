@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.Optional;
+import java.util.List;
 
 
 @Repository
@@ -25,6 +26,11 @@ public interface AirlineRepository extends JpaRepository<Airline, Long> {
             SELECT new com.example.skystayback.dtos.airline.AirlineReducedVO(a.id, a.name) FROM Airline a
     """)
     Page<AirlineReducedVO> getAllAirlinesReduced(Pageable pageable);
+
+    @Query("""
+            SELECT new com.example.skystayback.dtos.airline.AirlineReducedVO(a.id, a.name) FROM Airline a
+    """)
+    List<AirlineReducedVO> getAllAirlinesReducedNotPageable();
 
     Optional<Airline> findByCode(@Param("code") String code);
 }

@@ -1,6 +1,8 @@
 package com.example.skystayback.repositories;
 
 
+import com.example.skystayback.dtos.flights.CabinInfoVO;
+import com.example.skystayback.dtos.flights.FlightClientVO;
 import com.example.skystayback.dtos.flights.FlightsDetailsVO;
 import com.example.skystayback.dtos.flights.FlightsTableVO;
 import com.example.skystayback.models.Flight;
@@ -10,7 +12,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -70,7 +71,10 @@ public interface FlightRepository extends JpaRepository<Flight, Long> {
 """)
     Page<FlightsTableVO> findAllFlights(Pageable pageable);
 
-
+    @Query("""
+    SELECT f FROM Flight f WHERE f.status != 3 AND f.status != 4
+    """)
+    List<Flight> findAllNotLandedCancelled();
 
     @Query("""
     SELECT new com.example.skystayback.dtos.flights.FlightsDetailsVO(
@@ -245,4 +249,56 @@ public interface FlightRepository extends JpaRepository<Flight, Long> {
 
     @Query("SELECT f FROM Flight f")
     List<Flight> totalFlightsScheduled();
+
+    @Query("""
+        SELECT new com.example.skystayback.dtos.flights.CabinInfoVO(
+            ca.id,
+            ca.seatClass,
+            COUNT(fss.seat),
+            COUNT(CASE WHEN fss.state = true THEN 1 END),
+            fss.price
+        )
+        FROM FlightSeatStatus fss
+        JOIN fss.seat.cabin ca
+        WHERE fss.flight.code = :code
+        GROUP BY ca.id, ca.seatClass, fss.price
+    """)
+    List<CabinInfoVO> findCabinsByFlightCode(String code);
+
+    @Query("""
+    SELECT new com.example.skystayback.dtos.flights.FlightClientVO(
+        f.code,
+        al.name,
+        dac.name,
+        da.name,
+        da.iataCode,
+        aac.name,
+        aa.name,
+        aa.iataCode,
+        f.dateTime,
+        f.dateTimeArrival,
+        MIN(fss.price),
+        COUNT(CASE WHEN fss.state = true THEN 1 END)
+    )
+    FROM FlightSeatStatus fss
+    JOIN fss.flight f
+    JOIN f.airline al
+    JOIN f.departureAirport da
+    JOIN da.city dac
+    JOIN f.arrivalAirport aa
+    JOIN aa.city aac
+    WHERE (:origin IS NULL OR dac.name = :origin)
+      AND (:destination IS NULL OR aac.name = :destination)
+      AND (:airline IS NULL OR al.name = :airline)
+      AND (:price IS NULL OR fss.price <= :price)
+      AND fss.state = true AND f.status = 0
+    GROUP BY f.code, al.name, dac.name, da.name, da.iataCode,
+             aac.name, aa.name, aa.iataCode, f.dateTime, f.dateTimeArrival
+""")
+    Page<FlightClientVO> findAllClientFlightsWithFilters(Pageable pageable,
+                                                         @Param("origin") String origin,
+                                                         @Param("destination") String destination,
+                                                         @Param("airline") String airline,
+                                                         @Param("price") Float price);
+
 }
