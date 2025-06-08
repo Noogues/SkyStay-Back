@@ -17,11 +17,11 @@ public class RoomDetailsVO {
     private Long availableCount;
     private Double price;
 
-    public RoomDetailsVO(Long id, Integer capacity, String type, Integer availableRooms, Double price) {
+    public RoomDetailsVO(Long id, Integer capacity, RoomType type, long availableRooms, Double price) {
         this.roomConfigId = id;
         this.capacity = capacity;
-        this.roomType = RoomType.valueOf(type);
-        this.availableCount = Long.valueOf(availableRooms);
+        this.roomType = type;
+        this.availableCount = availableRooms;
         this.price = price;
     }
 }
