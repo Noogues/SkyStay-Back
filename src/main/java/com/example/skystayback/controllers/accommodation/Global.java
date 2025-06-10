@@ -2,10 +2,15 @@ package com.example.skystayback.controllers.accommodation;
 
 import com.example.skystayback.dtos.common.*;
 import com.example.skystayback.dtos.common.AccommodationResponseVO;
+import com.example.skystayback.models.User;
+import com.example.skystayback.security.JwtService;
+import com.example.skystayback.services.accommodation.FavouriteService;
 import com.example.skystayback.services.accommodation.GlobalService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -16,6 +21,13 @@ public class Global {
 
     @Autowired
     private GlobalService globalService;
+
+    @Autowired
+    private FavouriteService favouriteService;
+
+    @Autowired
+    private JwtService jwtService;
+
 
     @GetMapping("")
     public ResponseVO<List<AccommodationResponseVO>> getAccommodations(
@@ -56,5 +68,34 @@ public class Global {
             @RequestParam(required = false) Integer rooms) {
 
         return globalService.getAccommodationDetail(code,typeAccomodation, checkIn, checkOut, adults, children, rooms);
+    }
+
+
+    @PostMapping("/favorites/add")
+    public void addFavourite(@RequestHeader("Authorization") String authHeader, @RequestBody FavouriteRequest request) {
+        User user = jwtService.getUserFromToken(authHeader);
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token inválido o ausente");
+        }
+        favouriteService.addFavourite(request.getAccommodationId(), request.getType(), user);
+    }
+
+    @PostMapping("/favorites/remove")
+    public void removeFavourite(@RequestHeader("Authorization") String authHeader, @RequestBody FavouriteRequest request) {
+        User user = jwtService.getUserFromToken(authHeader);
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token inválido o ausente");
+        }
+        favouriteService.removeFavourite(request.getAccommodationId(), request.getType(), user);
+    }
+
+    @GetMapping("/favorites/check")
+    public IsFavouriteResponse checkFavourite(@RequestHeader("Authorization") String authHeader, @RequestParam String code, @RequestParam String type) {
+        User user = jwtService.getUserFromToken(authHeader);
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token inválido o ausente");
+        }
+        boolean isFav = favouriteService.isFavourite(code, type, user);
+        return new IsFavouriteResponse(isFav);
     }
 }
