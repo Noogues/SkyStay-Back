@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AccommodationResponseVO {
-    private Long id;
+    private String code;
     private String name;
     private Integer stars;
     private String address;
@@ -26,9 +26,10 @@ public class AccommodationResponseVO {
     private String img;
     private String accommodationType;
     private String amenities;
+    private Double averageRating;
 
-    public AccommodationResponseVO(Long id, String name, Integer stars, String address, String phoneNumber, String email, String website, String description, String cityName, String imageUrl, String amenities) {
-        this.id = id;
+    public AccommodationResponseVO(String code, String name, Integer stars, String address, String phoneNumber, String email, String website, String description, String cityName, String imageUrl, String amenities, Double averageRating) {
+        this.code = code;
         this.name = name;
         this.stars = stars;
         this.address = address;
@@ -39,5 +40,6 @@ public class AccommodationResponseVO {
         this.cityName = cityName;
         this.img = imageUrl;
         this.amenities = amenities;
+        this.averageRating = averageRating;
     }
 }
