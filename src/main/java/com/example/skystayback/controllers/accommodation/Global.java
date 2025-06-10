@@ -48,12 +48,13 @@ public class Global {
     @GetMapping("/{id}")
     public ResponseVO<AccommodationDetailVO> getAccommodationDetail(
             @PathVariable Long id,
+            @RequestParam (required = false) String typeAccomodation,
             @RequestParam(required = false) LocalDate checkIn,
             @RequestParam(required = false) LocalDate checkOut,
             @RequestParam(required = false) Integer adults,
             @RequestParam(required = false) Integer children,
             @RequestParam(required = false) Integer rooms) {
 
-        return globalService.getAccommodationDetail(id, checkIn, checkOut, adults, children, rooms);
+        return globalService.getAccommodationDetail(id,typeAccomodation, checkIn, checkOut, adults, children, rooms);
     }
 }
