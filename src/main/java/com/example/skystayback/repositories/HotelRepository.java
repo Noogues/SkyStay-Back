@@ -42,23 +42,24 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
     ShowHotelDetails findHotelDetailsByCode(@Param("hotelCode") String hotelCode);
 
     @Query("""
-            SELECT new com.example.skystayback.dtos.common.AccommodationResponseVO(
-                h.id,
-                h.name,
-                h.stars,
-                h.address,
-                h.phoneNumber,
-                h.email,
-                h.website,
-                h.description,
-                c.name,
-                (SELECT MIN(i.url) FROM HotelImage hi JOIN Image i ON hi.image.id = i.id WHERE hi.hotel.id = h.id),
-                h.amenities
-            )
-            FROM Hotel h
-            JOIN h.city c
-            WHERE c.name = :destination
-            """)
+    SELECT new com.example.skystayback.dtos.common.AccommodationResponseVO(
+        h.code,
+        h.name,
+        h.stars,
+        h.address,
+        h.phoneNumber,
+        h.email,
+        h.website,
+        h.description,
+        c.name,
+        (SELECT MIN(i.url) FROM HotelImage hi JOIN Image i ON hi.image.id = i.id WHERE hi.hotel.id = h.id),
+        h.amenities,
+        (SELECT AVG(hr.rating) FROM HotelRating hr WHERE hr.hotel.id = h.id)
+    )
+    FROM Hotel h
+    JOIN h.city c
+    WHERE c.name = :destination
+    """)
     List<AccommodationResponseVO> findHotelsByDestination(@Param("destination") String destination);
 
     @Query("""
@@ -79,7 +80,7 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
     )
     FROM RoomConfigurationHotel rch
     JOIN rch.hotel h
-    WHERE h.id = :hotelId
+    WHERE h.code = :hotelCode
     GROUP BY rch.id, rch.amount, rch.roomConfiguration.capacity, rch.roomConfiguration.type, rch.price
     HAVING (rch.amount - COALESCE(
             (SELECT COUNT(rb3.id)
@@ -109,7 +110,7 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
     )
 """)
     List<RoomDetailsVO> findAvailableRoomsByHotel(
-            @Param("hotelId") Long hotelId,
+            @Param("hotelCode") String hotelCode,
             @Param("checkIn") LocalDate checkIn,
             @Param("checkOut") LocalDate checkOut,
             @Param("rooms") Integer rooms,
@@ -121,7 +122,7 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
     List<String> findAllCities();
 
     @Query("""
-SELECT new com.example.skystayback.dtos.common.DestinationVO(h.id, h.name,
+SELECT new com.example.skystayback.dtos.common.DestinationVO(h.code, h.name,
     (SELECT MIN(i2.url) FROM HotelImage hi2 JOIN Image i2 ON hi2.image.id = i2.id WHERE hi2.hotel.id = h.id))
 FROM Hotel h
 JOIN HotelRating hr ON hr.hotel.id = h.id
@@ -131,7 +132,7 @@ ORDER BY AVG(hr.rating) DESC
     List<DestinationVO> findTopRatedHotels(Pageable pageable);
 
     @Query("""
-SELECT new com.example.skystayback.dtos.common.DestinationVO(a.id, a.name,
+SELECT new com.example.skystayback.dtos.common.DestinationVO(a.code, a.name,
     (SELECT MIN(i2.url) FROM ApartmentImage ai2 JOIN Image i2 ON ai2.image.id = i2.id WHERE ai2.apartment.id = a.id))
 FROM Apartment a
 JOIN ApartmentRating ar ON ar.apartment.id = a.id
@@ -141,7 +142,7 @@ ORDER BY AVG(ar.rating) DESC
     List<DestinationVO> findTopRatedApartments(Pageable pageable);
 
     @Query("""
-SELECT new com.example.skystayback.dtos.common.DestinationVO(h.id, h.name, 
+SELECT new com.example.skystayback.dtos.common.DestinationVO(h.code, h.name,\s
     (SELECT MIN(i2.url) FROM HotelImage hi2 JOIN Image i2 ON hi2.image.id = i2.id WHERE hi2.hotel.id = h.id))
 FROM Hotel h
 GROUP BY h.id, h.name
@@ -149,7 +150,7 @@ GROUP BY h.id, h.name
     List<DestinationVO> findRandomHotels(Pageable pageable);
 
     @Query("""
-SELECT new com.example.skystayback.dtos.common.DestinationVO(a.id, a.name,
+SELECT new com.example.skystayback.dtos.common.DestinationVO(a.code, a.name,
     (SELECT MIN(i2.url) FROM ApartmentImage ai2 JOIN Image i2 ON ai2.image.id = i2.id WHERE ai2.apartment.id = a.id))
 FROM Apartment a
 GROUP BY a.id, a.name
@@ -158,7 +159,7 @@ GROUP BY a.id, a.name
 
     @Query("""
 SELECT new com.example.skystayback.dtos.common.AccommodationDetailVO(
-    h.id,
+    h.code,
     h.name,
     h.stars,
     h.address,
@@ -169,41 +170,44 @@ SELECT new com.example.skystayback.dtos.common.AccommodationDetailVO(
     h.description,
     c.name,
     c.country.name,
-    h.amenities
+    h.amenities,
+    (SELECT AVG(hr.rating) FROM HotelRating hr WHERE hr.hotel.id = h.id)
 )
 FROM Hotel h
 JOIN h.city c
-WHERE h.id = :hotelId
+WHERE h.code = :hotelCode
 """)
-    AccommodationDetailVO findHotelDetailById(@Param("hotelId") Long hotelId);
+    AccommodationDetailVO findHotelDetailById(@Param("hotelCode") String hotelCode);
+
 
 
     @Query("""
 SELECT i.url
 FROM HotelImage hi
 JOIN Image i ON hi.image.id = i.id
-WHERE hi.hotel.id = :hotelId
+WHERE hi.hotel.code = :hotelCode
 """)
-    List<String> findAllHotelImages(@Param("hotelId") Long hotelId);
+    List<String> findAllHotelImages(@Param("hotelCode") String hotelCode);
 
     @Query("""
-        SELECT new com.example.skystayback.dtos.common.AccommodationResponseVO(
-            a.id,
-            a.name,
-            0,
-            a.address,
-            a.phoneNumber,
-            a.email,
-            a.website,
-            a.description,
-            c.name,
-            (SELECT MIN(i.url) FROM ApartmentImage ai JOIN Image i ON ai.image.id = i.id WHERE ai.apartment.id = a.id),
-            a.amenities
-        )
-        FROM Apartment a
-        JOIN a.city c
-        WHERE c.name = :destination
-        """)
+    SELECT new com.example.skystayback.dtos.common.AccommodationResponseVO(
+        a.code,
+        a.name,
+        0,
+        a.address,
+        a.phoneNumber,
+        a.email,
+        a.website,
+        a.description,
+        c.name,
+        (SELECT MIN(i.url) FROM ApartmentImage ai JOIN Image i ON ai.image.id = i.id WHERE ai.apartment.id = a.id),
+        a.amenities,
+        (SELECT AVG(ar.rating) FROM ApartmentRating ar WHERE ar.apartment.id = a.id)
+    )
+    FROM Apartment a
+    JOIN a.city c
+    WHERE c.name = :destination
+    """)
     List<AccommodationResponseVO> findApartmentsByDestination(@Param("destination") String destination);
 
     @Query("""
@@ -224,7 +228,7 @@ WHERE hi.hotel.id = :hotelId
     )
     FROM RoomConfigurationApartment rca
     JOIN rca.apartment a
-    WHERE a.id = :apartmentId
+    WHERE a.code = :apartmentCode
     GROUP BY rca.id, rca.amount, rca.roomConfiguration.capacity, rca.roomConfiguration.type, rca.price
     HAVING (rca.amount - COALESCE(
             (SELECT COUNT(rb3.id)
@@ -254,7 +258,7 @@ WHERE hi.hotel.id = :hotelId
     )
 """)
     List<RoomDetailsVO> findAvailableRoomsByApartment(
-            @Param("apartmentId") Long apartmentId,
+            @Param("apartmentCode") String apartmentCode,
             @Param("checkIn") LocalDate checkIn,
             @Param("checkOut") LocalDate checkOut,
             @Param("rooms") Integer rooms,
@@ -264,7 +268,7 @@ WHERE hi.hotel.id = :hotelId
 
     @Query("""
 SELECT new com.example.skystayback.dtos.common.AccommodationDetailVO(
-    a.id,
+    a.code,
     a.name,
     0,
     a.address,
@@ -275,19 +279,20 @@ SELECT new com.example.skystayback.dtos.common.AccommodationDetailVO(
     a.description,
     c.name,
     c.country.name,
-    a.amenities
+    a.amenities,
+    (SELECT AVG(ar.rating) FROM ApartmentRating ar WHERE ar.apartment.id = a.id)
 )
 FROM Apartment a
 JOIN a.city c
-WHERE a.id = :apartmentId
+WHERE a.code = :apartmentCode
 """)
-    AccommodationDetailVO findApartmentDetailById(@Param("apartmentId") Long apartmentId);
+    AccommodationDetailVO findApartmentDetailById(@Param("apartmentCode") String apartmentCode);
 
     @Query("""
 SELECT i.url
 FROM ApartmentImage ai
 JOIN Image i ON ai.image.id = i.id
-WHERE ai.apartment.id = :apartmentId
+WHERE ai.apartment.code = :apartmentCode
 """)
-    List<String> findAllApartmentImages(@Param("apartmentId") Long apartmentId);
+    List<String> findAllApartmentImages(@Param("apartmentCode") String apartmentCode);
 }
