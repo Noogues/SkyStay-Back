@@ -45,9 +45,9 @@ public class Global {
         return globalService.getTopRatedDestinations();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{code}")
     public ResponseVO<AccommodationDetailVO> getAccommodationDetail(
-            @PathVariable Long id,
+            @PathVariable String code,
             @RequestParam (required = false) String typeAccomodation,
             @RequestParam(required = false) LocalDate checkIn,
             @RequestParam(required = false) LocalDate checkOut,
@@ -55,6 +55,6 @@ public class Global {
             @RequestParam(required = false) Integer children,
             @RequestParam(required = false) Integer rooms) {
 
-        return globalService.getAccommodationDetail(id,typeAccomodation, checkIn, checkOut, adults, children, rooms);
+        return globalService.getAccommodationDetail(code,typeAccomodation, checkIn, checkOut, adults, children, rooms);
     }
 }
