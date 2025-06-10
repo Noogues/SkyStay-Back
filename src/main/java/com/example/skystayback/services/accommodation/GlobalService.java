@@ -82,7 +82,7 @@ public class GlobalService {
         return hotelRepository.findAllCities();
     }
 
-    public List<DestinationVO> getTopDestinations() {
+    public List<DestinationVO> getDestinations() {
         Pageable limit = PageRequest.of(0, 3);
         List<DestinationVO> hotels = hotelRepository.findRandomHotels(limit);
         List<DestinationVO> apartments = hotelRepository.findRandomApartments(limit);
