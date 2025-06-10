@@ -37,7 +37,7 @@ public class Global {
 
     @GetMapping("/destinations")
     public List<DestinationVO> getDestinations() {
-        return globalService.getTopDestinations();
+        return globalService.getDestinations();
     }
 
     @GetMapping("/destinations/most-rated")
