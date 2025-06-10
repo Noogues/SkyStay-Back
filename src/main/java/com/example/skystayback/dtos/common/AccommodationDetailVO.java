@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AccommodationDetailVO {
-    private Long id;
+    private String code;
     private String name;
     private Integer stars;
     private String address;
@@ -27,12 +27,13 @@ public class AccommodationDetailVO {
     private List<RoomDetailsVO> availableRooms;
     private String accommodationType;
     private String amenities;
+    private Double averageRating;
 
 
-    public AccommodationDetailVO(Long id, String name, Integer stars, String address, String postalCode,
+    public AccommodationDetailVO(String code, String name, Integer stars, String address, String postalCode,
                                  String phoneNumber, String email, String website, String description,
-                                 String cityName, String countryName, String amenities) {
-        this.id = id;
+                                 String cityName, String countryName, String amenities, Double averageRating) {
+        this.code = code;
         this.name = name;
         this.stars = stars;
         this.address = address;
@@ -44,6 +45,7 @@ public class AccommodationDetailVO {
         this.cityName = cityName;
         this.countryName = countryName;
         this.amenities = amenities;
+        this.averageRating = averageRating;
 
     }
 }
