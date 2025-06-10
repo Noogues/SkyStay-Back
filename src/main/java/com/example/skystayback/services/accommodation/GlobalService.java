@@ -125,46 +125,51 @@ public class GlobalService {
     }
 
 
+
     public ResponseVO<AccommodationDetailVO> getAccommodationDetail(
             Long id,
+            String typeAccomodation,
             LocalDate checkIn,
             LocalDate checkOut,
             Integer adults,
             Integer children,
             Integer rooms) {
 
-        AccommodationDetailVO accommodationDetail = hotelRepository.findHotelDetailById(id);
+        AccommodationDetailVO accommodationDetail = null;
         List<String> images;
         List<RoomDetailsVO> availableRooms;
 
-        // Aplicar los parámetros proporcionados individualmente
+        // Parámetros efectivos
         LocalDate effectiveCheckIn = checkIn;
         LocalDate effectiveCheckOut = checkOut;
         Integer effectiveAdults = adults != null ? adults : 1;
         Integer effectiveChildren = children != null ? children : 0;
         Integer effectiveRooms = rooms != null ? rooms : 1;
 
-        if (accommodationDetail != null) {
-            // Es un hotel
-            images = hotelRepository.findAllHotelImages(id);
-            availableRooms = hotelRepository.findAvailableRoomsByHotel(
-                    id, effectiveCheckIn, effectiveCheckOut, effectiveRooms, effectiveAdults, effectiveChildren);
-            accommodationDetail.setAccommodationType("hotel");
-        } else {
-            // Intentar buscar como apartamento
+        if ("apartment".equalsIgnoreCase(typeAccomodation)) {
             accommodationDetail = hotelRepository.findApartmentDetailById(id);
-
             if (accommodationDetail == null) {
                 return ResponseVO.<AccommodationDetailVO>builder()
                         .response(null)
                         .messages(new MessageResponseVO("No se encontró el alojamiento", 404, LocalDateTime.now()))
                         .build();
             }
-
             images = hotelRepository.findAllApartmentImages(id);
             availableRooms = hotelRepository.findAvailableRoomsByApartment(
                     id, effectiveCheckIn, effectiveCheckOut, effectiveRooms, effectiveAdults, effectiveChildren);
             accommodationDetail.setAccommodationType("apartment");
+        } else { // Por defecto, hotel
+            accommodationDetail = hotelRepository.findHotelDetailById(id);
+            if (accommodationDetail == null) {
+                return ResponseVO.<AccommodationDetailVO>builder()
+                        .response(null)
+                        .messages(new MessageResponseVO("No se encontró el alojamiento", 404, LocalDateTime.now()))
+                        .build();
+            }
+            images = hotelRepository.findAllHotelImages(id);
+            availableRooms = hotelRepository.findAvailableRoomsByHotel(
+                    id, effectiveCheckIn, effectiveCheckOut, effectiveRooms, effectiveAdults, effectiveChildren);
+            accommodationDetail.setAccommodationType("hotel");
         }
 
         accommodationDetail.setImages(images);
