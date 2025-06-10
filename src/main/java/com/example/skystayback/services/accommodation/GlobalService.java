@@ -112,13 +112,28 @@ public class GlobalService {
         combined.addAll(topHotels);
         combined.addAll(topApartments);
 
-        if (combined.size() < 6) {
+        int total = combined.size();
+
+        if (total < 6) {
             if (topHotels.size() < 3) {
-                combined.addAll(hotelRepository.findTopRatedHotels(PageRequest.of(0, 3 - topHotels.size())));
+                int needed = 6 - total;
+                List<DestinationVO> moreApartments = hotelRepository.findTopRatedApartments(PageRequest.of(0, needed));
+                moreApartments.removeAll(topApartments);
+                combined.addAll(moreApartments);
             }
-            if (topApartments.size() < 3 && combined.size() < 6) {
-                combined.addAll(hotelRepository.findTopRatedApartments(PageRequest.of(0, 6 - combined.size())));
+            if (combined.size() < 6 && topApartments.size() < 3) {
+                int needed = 6 - combined.size();
+                List<DestinationVO> moreHotels = hotelRepository.findTopRatedHotels(PageRequest.of(0, needed));
+                moreHotels.removeAll(topHotels);
+                combined.addAll(moreHotels);
             }
+        }
+
+        if (topHotels.isEmpty()) {
+            combined = hotelRepository.findTopRatedApartments(PageRequest.of(0, 6));
+        }
+        if (topApartments.isEmpty()) {
+            combined = hotelRepository.findTopRatedHotels(PageRequest.of(0, 6));
         }
 
         return combined.stream().limit(6).collect(Collectors.toList());
