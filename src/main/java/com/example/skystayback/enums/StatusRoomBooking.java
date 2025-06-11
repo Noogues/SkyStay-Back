@@ -1,8 +1,5 @@
 package com.example.skystayback.enums;
 
 public enum StatusRoomBooking {
-    Pending, Confirmed, Canceled, CheckIn, CheckOut, Completed
-
-
-
+    PENDING, CONFIRMED, CANCELED, CHECKIN, CHECKOUT, COMPLETED
 }
