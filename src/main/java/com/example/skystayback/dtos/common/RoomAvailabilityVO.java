@@ -10,7 +10,5 @@ import java.util.List;
 @NoArgsConstructor
 public class RoomAvailabilityVO {
     private String roomId;
-    private boolean available;
-    private int availableQuantity;
     private List<DateRangeVO> availableDateRanges;
 }
