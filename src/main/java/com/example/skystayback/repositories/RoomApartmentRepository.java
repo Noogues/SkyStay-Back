@@ -25,4 +25,13 @@ public interface RoomApartmentRepository extends JpaRepository<RoomApartment, Lo
              WHERE rc.id = :roomConfigurationId
             """)
     List<RoomVO> findAllRoomsByApartmentCodeAndRoomConfigurationId(@Param("roomConfigurationId") Long roomConfigurationId);
+
+    @Query(value = """
+             SELECT ra
+             FROM RoomApartment ra
+             INNER JOIN RoomConfigurationApartment rca ON ra.roomConfiguration.id = rca.id
+             WHERE rca.id = :roomConfigurationId
+            """)
+    List<RoomApartment> findAllRoomsByRoomConfigurationId(@Param("roomConfigurationId") Long roomConfigurationId);
+
 }
