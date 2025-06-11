@@ -1,19 +1,20 @@
 package com.example.skystayback.controllers.accommodation;
 
 import com.example.skystayback.dtos.common.*;
-import com.example.skystayback.dtos.common.AccommodationResponseVO;
 import com.example.skystayback.models.User;
 import com.example.skystayback.security.JwtService;
 import com.example.skystayback.services.accommodation.FavouriteService;
 import com.example.skystayback.services.accommodation.GlobalService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import java.util.List;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/accommodations")
@@ -27,7 +28,6 @@ public class Global {
 
     @Autowired
     private JwtService jwtService;
-
 
     @GetMapping("")
     public ResponseVO<List<AccommodationResponseVO>> getAccommodations(
@@ -97,5 +97,17 @@ public class Global {
         }
         boolean isFav = favouriteService.isFavourite(code, type, user);
         return new IsFavouriteResponse(isFav);
+    }
+
+    @GetMapping("/availability")
+    public ResponseVO<List<RoomAvailabilityVO>> checkRoomAvailability(
+            @RequestParam String code,
+            @RequestParam String type,
+            @RequestParam List<String> roomId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkIn,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkOut) {
+
+        // Ignoramos las fechas proporcionadas y pasamos null para obtener toda la disponibilidad
+        return globalService.checkRoomAvailability(code, type, roomId, null, null);
     }
 }
