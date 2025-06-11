@@ -12,9 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
-
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/accommodations")
@@ -70,6 +68,10 @@ public class Global {
         return globalService.getAccommodationDetail(code,typeAccomodation, checkIn, checkOut, adults, children, rooms);
     }
 
+    @PostMapping("/realizar")
+    public ResponseVO<Void> realizarReserva(@RequestHeader("Authorization") String authHeader, @RequestBody RealizarReservaRequest request) {
+        return globalService.realizarReserva(request, authHeader, request.getStartDate(), request.getEndDate());
+    }
 
     @PostMapping("/favorites/add")
     public void addFavourite(@RequestHeader("Authorization") String authHeader, @RequestBody FavouriteRequest request) {
@@ -100,14 +102,22 @@ public class Global {
     }
 
     @GetMapping("/availability")
-    public ResponseVO<List<RoomAvailabilityVO>> checkRoomAvailability(
-            @RequestParam String code,
-            @RequestParam String type,
-            @RequestParam List<String> roomId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkIn,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkOut) {
+    public List<LocalDate> getAvailableDates(
+            @RequestParam List<Long> roomConfigIds,
+            @RequestParam String accommodationType,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        LocalDate today = LocalDate.now();
+        LocalDate start = (startDate != null) ? startDate : today;
+        LocalDate end = (endDate != null) ? endDate : today.plusMonths(6);
 
-        // Ignoramos las fechas proporcionadas y pasamos null para obtener toda la disponibilidad
-        return globalService.checkRoomAvailability(code, type, roomId, null, null);
+        if ("apartment".equalsIgnoreCase(accommodationType)) {
+            return globalService.getAvailableDatesApartment(roomConfigIds, start, end);
+        } else {
+            return globalService.getAvailableDates(roomConfigIds, start, end);
+        }
     }
+
+
 }
+
