@@ -22,6 +22,7 @@ public class RoomAparmentBooking {
     @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
 
+    @Enumerated(EnumType.ORDINAL)
     @Column(name = "status", nullable = false)
     private StatusRoomBooking status;
 
