@@ -2,22 +2,27 @@ package com.example.skystayback.services.accommodation;
 
 import com.example.skystayback.dtos.common.*;
 import com.example.skystayback.repositories.HotelRepository;
+import com.example.skystayback.repositories.RoomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
+import java.util.Set;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.time.LocalDate;
+import java.util.HashSet;
 
 @Service
 public class GlobalService {
 
     @Autowired
     private HotelRepository hotelRepository;
+    @Autowired
+    private RoomRepository roomRepository;
 
     public ResponseVO<List<AccommodationResponseVO>> searchAccommodations(
             String destination,
@@ -193,4 +198,61 @@ public class GlobalService {
                 .messages(new MessageResponseVO("Detalles del alojamiento obtenidos correctamente", 200, LocalDateTime.now()))
                 .build();
     }
+
+    public ResponseVO<List<RoomAvailabilityVO>> checkRoomAvailability(
+            String accommodationCode,
+            String type,
+            List<String> roomIds,
+            LocalDate checkIn,
+            LocalDate checkOut) {
+
+        List<RoomAvailabilityVO> availabilityResults = new ArrayList<>();
+
+        // Fechas por defecto si no se proporcionan
+        LocalDate effectiveCheckIn = checkIn != null ? checkIn : LocalDate.now();
+        LocalDate effectiveCheckOut = checkOut != null ? checkOut : effectiveCheckIn.plusMonths(6);
+
+        if ("hotel".equalsIgnoreCase(type)) {
+            for (String roomId : roomIds) {
+                Long roomConfigId = Long.parseLong(roomId);
+                Integer availability = hotelRepository.checkRoomAvailability(
+                        accommodationCode, roomConfigId, effectiveCheckIn, effectiveCheckOut);
+
+                List<DateRangeVO> availableDateRanges = hotelRepository.findAvailableDateRangesForHotelRoom(
+                        accommodationCode, roomConfigId, effectiveCheckIn, effectiveCheckOut);
+
+                RoomAvailabilityVO roomAvailability = new RoomAvailabilityVO(
+                        roomId,
+                        availability > 0,
+                        availability,
+                        availableDateRanges
+                );
+                availabilityResults.add(roomAvailability);
+            }
+        } else if ("apartment".equalsIgnoreCase(type)) {
+            for (String roomId : roomIds) {
+                Long roomConfigId = Long.parseLong(roomId);
+                Integer availability = hotelRepository.checkApartmentRoomAvailability(
+                        accommodationCode, roomConfigId, effectiveCheckIn, effectiveCheckOut);
+
+                List<DateRangeVO> availableDateRanges = hotelRepository.findAvailableDateRangesForApartmentRoom(
+                        accommodationCode, roomConfigId, effectiveCheckIn, effectiveCheckOut);
+
+                RoomAvailabilityVO roomAvailability = new RoomAvailabilityVO(
+                        roomId,
+                        availability > 0,
+                        availability,
+                        availableDateRanges
+                );
+                availabilityResults.add(roomAvailability);
+            }
+        }
+
+        return ResponseVO.<List<RoomAvailabilityVO>>builder()
+                .response(new DataVO<>(availabilityResults))
+                .messages(new MessageResponseVO("Disponibilidad de habitaciones consultada con éxito", 200, LocalDateTime.now()))
+                .build();
+    }
+
+
 }
