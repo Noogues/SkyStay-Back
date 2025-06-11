@@ -295,4 +295,130 @@ JOIN Image i ON ai.image.id = i.id
 WHERE ai.apartment.code = :apartmentCode
 """)
     List<String> findAllApartmentImages(@Param("apartmentCode") String apartmentCode);
+
+
+
+    @Query("""
+    SELECT new com.example.skystayback.dtos.common.DateRangeVO(
+        rb.endDate,
+        COALESCE((SELECT MIN(rb2.startDate) FROM RoomBooking rb2
+                 WHERE rb2.room.roomConfiguration.id = :roomConfigId
+                 AND rb2.status IN ('CONFIRMED', 'CHECKED_IN', 'PENDING')
+                 AND rb2.startDate > rb.endDate
+                 ORDER BY rb2.startDate),
+                 CAST(:maxDate AS date))
+    )
+    FROM RoomBooking rb
+    JOIN rb.room r
+    WHERE r.roomConfiguration.id = :roomConfigId
+    AND rb.status IN ('CONFIRMED', 'CHECKED_IN', 'PENDING')
+    AND rb.endDate >= :minDate
+    UNION
+    SELECT new com.example.skystayback.dtos.common.DateRangeVO(
+        :minDate,
+        COALESCE((SELECT MIN(rb3.startDate) FROM RoomBooking rb3
+                 WHERE rb3.room.roomConfiguration.id = :roomConfigId
+                 AND rb3.status IN ('CONFIRMED', 'CHECKED_IN', 'PENDING')
+                 AND rb3.startDate >= :minDate
+                 ORDER BY rb3.startDate),
+                 CAST(:maxDate AS date))
+    )
+    WHERE NOT EXISTS (
+        SELECT 1 FROM RoomBooking rb4
+        WHERE rb4.room.roomConfiguration.id = :roomConfigId
+        AND rb4.status IN ('CONFIRMED', 'CHECKED_IN', 'PENDING')
+        AND rb4.startDate <= :minDate AND rb4.endDate > :minDate
+    )
+    ORDER BY 1
+""")
+    List<DateRangeVO> findAvailableDateRangesForHotelRoom(
+            @Param("hotelCode") String hotelCode,
+            @Param("roomConfigId") Long roomConfigId,
+            @Param("minDate") LocalDate minDate,
+            @Param("maxDate") LocalDate maxDate
+    );
+
+    @Query("""
+    SELECT new com.example.skystayback.dtos.common.DateRangeVO(
+        rb.endDate,
+        COALESCE((SELECT MIN(rb2.startDate) FROM RoomBooking rb2
+                 WHERE rb2.room.roomConfiguration.id = :roomConfigId
+                 AND rb2.status IN ('CONFIRMED', 'CHECKED_IN', 'PENDING')
+                 AND rb2.startDate > rb.endDate
+                 ORDER BY rb2.startDate),
+                 CAST(:maxDate AS date))
+    )
+    FROM RoomBooking rb
+    JOIN rb.room r
+    WHERE r.roomConfiguration.id = :roomConfigId
+    AND rb.status IN ('CONFIRMED', 'CHECKED_IN', 'PENDING')
+    AND rb.endDate >= :minDate
+    UNION
+    SELECT new com.example.skystayback.dtos.common.DateRangeVO(
+        :minDate,
+        COALESCE((SELECT MIN(rb3.startDate) FROM RoomBooking rb3
+                 WHERE rb3.room.roomConfiguration.id = :roomConfigId
+                 AND rb3.status IN ('CONFIRMED', 'CHECKED_IN', 'PENDING')
+                 AND rb3.startDate >= :minDate
+                 ORDER BY rb3.startDate),
+                 CAST(:maxDate AS date))
+    )
+    WHERE NOT EXISTS (
+        SELECT 1 FROM RoomBooking rb4
+        WHERE rb4.room.roomConfiguration.id = :roomConfigId
+        AND rb4.status IN ('CONFIRMED', 'CHECKED_IN', 'PENDING')
+        AND rb4.startDate <= :minDate AND rb4.endDate > :minDate
+    )
+    ORDER BY 1
+""")
+    List<DateRangeVO> findAvailableDateRangesForApartmentRoom(
+            @Param("apartmentCode") String apartmentCode,
+            @Param("roomConfigId") Long roomConfigId,
+            @Param("minDate") LocalDate minDate,
+            @Param("maxDate") LocalDate maxDate
+    );
+
+    @Query("""
+    SELECT (rch.amount - COALESCE(
+        (SELECT COUNT(rb.id)
+        FROM RoomBooking rb
+        JOIN rb.room r
+        WHERE r.roomConfiguration.id = rch.id
+        AND rb.status IN ('CONFIRMED', 'CHECKED_IN', 'PENDING')
+        AND (:checkOut IS NULL OR rb.startDate < :checkOut)
+        AND (:checkIn IS NULL OR rb.endDate > :checkIn)), 0
+    ))
+    FROM RoomConfigurationHotel rch
+    JOIN rch.hotel h
+    WHERE h.code = :hotelCode AND rch.id = :roomConfigId
+""")
+    Integer checkRoomAvailability(
+            @Param("hotelCode") String hotelCode,
+            @Param("roomConfigId") Long roomConfigId,
+            @Param("checkIn") LocalDate checkIn,
+            @Param("checkOut") LocalDate checkOut
+    );
+
+    @Query("""
+    SELECT (rca.amount - COALESCE(
+        (SELECT COUNT(rb.id)
+        FROM RoomBooking rb
+        JOIN rb.room r
+        WHERE r.roomConfiguration.id = rca.id
+        AND rb.status IN ('CONFIRMED', 'CHECKED_IN', 'PENDING')
+        AND (:checkOut IS NULL OR rb.startDate < :checkOut)
+        AND (:checkIn IS NULL OR rb.endDate > :checkIn)), 0
+    ))
+    FROM RoomConfigurationApartment rca
+    JOIN rca.apartment a
+    WHERE a.code = :apartmentCode AND rca.id = :roomConfigId
+""")
+    Integer checkApartmentRoomAvailability(
+            @Param("apartmentCode") String apartmentCode,
+            @Param("roomConfigId") Long roomConfigId,
+            @Param("checkIn") LocalDate checkIn,
+            @Param("checkOut") LocalDate checkOut
+    );
+
+
 }
