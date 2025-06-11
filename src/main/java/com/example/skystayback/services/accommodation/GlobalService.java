@@ -1,20 +1,24 @@
 package com.example.skystayback.services.accommodation;
 
 import com.example.skystayback.dtos.common.*;
+import com.example.skystayback.dtos.hotel.RoomVO;
+import com.example.skystayback.enums.StatusRoomBooking;
+import com.example.skystayback.models.*;
 import com.example.skystayback.repositories.HotelRepository;
+import com.example.skystayback.repositories.RoomBookingRepository;
+import com.example.skystayback.repositories.RoomAparmentBookingRepository;
+import com.example.skystayback.repositories.RoomApartmentRepository;
 import com.example.skystayback.repositories.RoomRepository;
+import com.example.skystayback.security.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import java.util.Set;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.time.LocalDate;
-import java.util.HashSet;
 
 @Service
 public class GlobalService {
@@ -22,7 +26,15 @@ public class GlobalService {
     @Autowired
     private HotelRepository hotelRepository;
     @Autowired
+    private RoomBookingRepository roomBookingRepository;
+    @Autowired
+    private RoomAparmentBookingRepository roomAparmentBookingRepository;
+    @Autowired
+    private RoomApartmentRepository roomApartmentRepository;
+    @Autowired
     private RoomRepository roomRepository;
+    @Autowired
+    private JwtService jwtService;
 
     public ResponseVO<List<AccommodationResponseVO>> searchAccommodations(
             String destination,
@@ -144,8 +156,6 @@ public class GlobalService {
         return combined.stream().limit(6).collect(Collectors.toList());
     }
 
-
-
     public ResponseVO<AccommodationDetailVO> getAccommodationDetail(
             String code,
             String typeAccomodation,
@@ -155,7 +165,7 @@ public class GlobalService {
             Integer children,
             Integer rooms) {
 
-        AccommodationDetailVO accommodationDetail = null;
+        AccommodationDetailVO accommodationDetail;
         List<String> images;
         List<RoomDetailsVO> availableRooms;
 
@@ -199,60 +209,94 @@ public class GlobalService {
                 .build();
     }
 
-    public ResponseVO<List<RoomAvailabilityVO>> checkRoomAvailability(
-            String accommodationCode,
-            String type,
-            List<String> roomIds,
-            LocalDate checkIn,
-            LocalDate checkOut) {
-
-        List<RoomAvailabilityVO> availabilityResults = new ArrayList<>();
-
-        // Fechas por defecto si no se proporcionan
-        LocalDate effectiveCheckIn = checkIn != null ? checkIn : LocalDate.now();
-        LocalDate effectiveCheckOut = checkOut != null ? checkOut : effectiveCheckIn.plusMonths(6);
-
-        if ("hotel".equalsIgnoreCase(type)) {
-            for (String roomId : roomIds) {
-                Long roomConfigId = Long.parseLong(roomId);
-                Integer availability = hotelRepository.checkRoomAvailability(
-                        accommodationCode, roomConfigId, effectiveCheckIn, effectiveCheckOut);
-
-                List<DateRangeVO> availableDateRanges = hotelRepository.findAvailableDateRangesForHotelRoom(
-                        accommodationCode, roomConfigId, effectiveCheckIn, effectiveCheckOut);
-
-                RoomAvailabilityVO roomAvailability = new RoomAvailabilityVO(
-                        roomId,
-                        availability > 0,
-                        availability,
-                        availableDateRanges
-                );
-                availabilityResults.add(roomAvailability);
-            }
-        } else if ("apartment".equalsIgnoreCase(type)) {
-            for (String roomId : roomIds) {
-                Long roomConfigId = Long.parseLong(roomId);
-                Integer availability = hotelRepository.checkApartmentRoomAvailability(
-                        accommodationCode, roomConfigId, effectiveCheckIn, effectiveCheckOut);
-
-                List<DateRangeVO> availableDateRanges = hotelRepository.findAvailableDateRangesForApartmentRoom(
-                        accommodationCode, roomConfigId, effectiveCheckIn, effectiveCheckOut);
-
-                RoomAvailabilityVO roomAvailability = new RoomAvailabilityVO(
-                        roomId,
-                        availability > 0,
-                        availability,
-                        availableDateRanges
-                );
-                availabilityResults.add(roomAvailability);
-            }
-        }
-
-        return ResponseVO.<List<RoomAvailabilityVO>>builder()
-                .response(new DataVO<>(availabilityResults))
-                .messages(new MessageResponseVO("Disponibilidad de habitaciones consultada con éxito", 200, LocalDateTime.now()))
-                .build();
+    public List<LocalDate> getAvailableDates(List<Long> roomConfigIds, LocalDate startDate, LocalDate endDate) {
+        List<java.sql.Date> dates = roomBookingRepository.findAvailableDates(
+                roomConfigIds,
+                java.sql.Date.valueOf(startDate),
+                java.sql.Date.valueOf(endDate)
+        );
+        return dates.stream().map(java.sql.Date::toLocalDate).toList();
     }
 
+    public List<LocalDate> getAvailableDatesApartment(List<Long> roomConfigIds, LocalDate startDate, LocalDate endDate) {
+        List<java.sql.Date> dates = roomBookingRepository.findAvailableDatesAp(
+                roomConfigIds,
+                java.sql.Date.valueOf(startDate),
+                java.sql.Date.valueOf(endDate)
+        );
+        return dates.stream().map(java.sql.Date::toLocalDate).toList();
+    }
+
+    public ResponseVO<Void> realizarReserva(RealizarReservaRequest request, String authHeader, LocalDate startDate, LocalDate endDate) {
+        if (request.getRooms() == null || request.getRooms().isEmpty()) {
+            return ResponseVO.<Void>builder()
+                    .messages(new MessageResponseVO("No se han seleccionado habitaciones", 400, java.time.LocalDateTime.now()))
+                    .build();
+        }
+        if (request.getAccommodationCode() == null || request.getAccommodationType() == null) {
+            return ResponseVO.<Void>builder()
+                    .messages(new MessageResponseVO("Datos de alojamiento incompletos", 400, java.time.LocalDateTime.now()))
+                    .build();
+        }
+        User user = jwtService.getUserFromToken(authHeader);
+        if (user == null) {
+            return ResponseVO.<Void>builder()
+                    .messages(new MessageResponseVO("Usuario no autenticado", 401, java.time.LocalDateTime.now()))
+                    .build();
+        }
+        try {
+            if ("apartment".equalsIgnoreCase(request.getAccommodationType())) {
+                for (RoomSelectionRequest selection : request.getRooms()) {
+                    List<RoomApartment> allRooms = roomApartmentRepository.findAllRoomsByRoomConfigurationId(selection.getRoomConfigId());
+                    List<RoomApartment> freeRooms = allRooms.stream().limit(selection.getQty()).toList();
+                    if (freeRooms.size() < selection.getQty()) {
+                        return ResponseVO.<Void>builder()
+                            .messages(new MessageResponseVO("No hay suficientes habitaciones/apartamentos libres para la configuración " + selection.getRoomConfigId(), 400, java.time.LocalDateTime.now()))
+                            .build();
+                    }
+                    for (int i = 0; i < selection.getQty(); i++) {
+                        RoomApartment room = freeRooms.get(i);
+                        RoomAparmentBooking booking = new RoomAparmentBooking();
+                        booking.setRoom(room);
+                        booking.setUser(user);
+                        booking.setStartDate(startDate);
+                        booking.setEndDate(endDate);
+                        booking.setStatus(StatusRoomBooking.CONFIRMED);
+                        roomAparmentBookingRepository.save(booking);
+                    }
+                }
+                return ResponseVO.<Void>builder()
+                        .messages(new MessageResponseVO("Reserva de apartamento realizada con éxito", 200, java.time.LocalDateTime.now()))
+                        .build();
+            } else {
+                for (RoomSelectionRequest selection : request.getRooms()) {
+                    List<Room> allRooms = roomRepository.findAllRoomsByRoomConfigurationId(selection.getRoomConfigId());
+                    List<Room> freeRooms = allRooms.stream().limit(selection.getQty()).toList();
+                    if (freeRooms.size() < selection.getQty()) {
+                        return ResponseVO.<Void>builder()
+                            .messages(new MessageResponseVO("No hay suficientes habitaciones libres para la configuración " + selection.getRoomConfigId(), 400, java.time.LocalDateTime.now()))
+                            .build();
+                    }
+                    for (int i = 0; i < selection.getQty(); i++) {
+                        Room room = freeRooms.get(i);
+                        RoomBooking booking = new RoomBooking();
+                        booking.setRoom(room);
+                        booking.setUser(user);
+                        booking.setStartDate(startDate);
+                        booking.setEndDate(endDate);
+                        booking.setStatus(StatusRoomBooking.CONFIRMED);
+                        roomBookingRepository.save(booking);
+                    }
+                }
+                return ResponseVO.<Void>builder()
+                        .messages(new MessageResponseVO("Reserva de hotel realizada con éxito", 200, java.time.LocalDateTime.now()))
+                        .build();
+            }
+        } catch (Exception e) {
+            return ResponseVO.<Void>builder()
+                    .messages(new MessageResponseVO("Error al realizar la reserva: " + e.getMessage(), 500, java.time.LocalDateTime.now()))
+                    .build();
+        }
+    }
 
 }
