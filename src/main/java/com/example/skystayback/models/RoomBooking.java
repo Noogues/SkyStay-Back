@@ -24,7 +24,7 @@ public class RoomBooking {
     private LocalDate endDate;
 
     @Column(name = "status", nullable = false)
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.ORDINAL)
     private StatusRoomBooking status;
 
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
