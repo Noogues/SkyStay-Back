@@ -70,30 +70,28 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
         rch.id,
         rch.roomConfiguration.capacity,
         rch.roomConfiguration.type,
-        (rch.amount - COALESCE(
-            (SELECT COUNT(rb2.id)
-            FROM RoomBooking rb2
-            JOIN rb2.room r2
-            WHERE r2.roomConfiguration.id = rch.id
-            AND rb2.status IN (1, 3, 0)
-            AND (:checkOut IS NULL OR rb2.startDate < :checkOut)
-            AND (:checkIn IS NULL OR rb2.endDate > :checkIn)), 0
-        )),
+        rch.amount,
         rch.price
     )
     FROM RoomConfigurationHotel rch
     JOIN rch.hotel h
     WHERE h.code = :hotelCode
     GROUP BY rch.id, rch.amount, rch.roomConfiguration.capacity, rch.roomConfiguration.type, rch.price
-    HAVING (rch.amount - COALESCE(
-            (SELECT COUNT(rb3.id)
-            FROM RoomBooking rb3
-            JOIN rb3.room r3
-            WHERE r3.roomConfiguration.id = rch.id
-            AND rb3.status IN (1, 3, 0)
-            AND (:checkOut IS NULL OR rb3.startDate < :checkOut)
-            AND (:checkIn IS NULL OR rb3.endDate > :checkIn)), 0
-        )) >= :rooms
+    HAVING (
+        (:checkIn IS NULL AND :checkOut IS NULL) OR
+        (
+            (rch.amount - COALESCE(
+                (SELECT COUNT(rb3.id)
+                FROM RoomBooking rb3
+                JOIN rb3.room r3
+                WHERE r3.roomConfiguration.id = rch.id
+                AND rb3.status IN (1, 3, 0)
+                AND ((:checkOut IS NULL OR rb3.startDate < :checkOut)
+                AND (:checkIn IS NULL OR rb3.endDate > :checkIn))
+                ), 0
+            )) >= :rooms
+        )
+    )
     AND (
         (:rooms = 1 AND rch.roomConfiguration.capacity >= (:adults + :children))
         OR
@@ -106,8 +104,9 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
                 JOIN rb4.room r4
                 WHERE r4.roomConfiguration.id = rch.id
                 AND rb4.status IN (1, 3, 0)
-                AND (:checkOut IS NULL OR rb4.startDate < :checkOut)
-                AND (:checkIn IS NULL OR rb4.endDate > :checkIn)), 0
+                AND ((:checkOut IS NULL OR rb4.startDate < :checkOut)
+                AND (:checkIn IS NULL OR rb4.endDate > :checkIn))
+                ), 0
             )) >= (:adults + :children))
         ))
     )
@@ -218,30 +217,28 @@ WHERE hi.hotel.code = :hotelCode
         rca.id,
         rca.roomConfiguration.capacity,
         rca.roomConfiguration.type,
-        (rca.amount - COALESCE(
-            (SELECT COUNT(rba2.id)
-            FROM RoomAparmentBooking rba2
-            JOIN rba2.room ra2
-            WHERE ra2.roomConfiguration.id = rca.id
-            AND rba2.status IN (1, 3, 0)
-            AND (:checkOut IS NULL OR rba2.startDate < :checkOut)
-            AND (:checkIn IS NULL OR rba2.endDate > :checkIn)), 0
-        )),
+        rca.amount,
         rca.price
     )
     FROM RoomConfigurationApartment rca
     JOIN rca.apartment a
     WHERE a.code = :apartmentCode
     GROUP BY rca.id, rca.amount, rca.roomConfiguration.capacity, rca.roomConfiguration.type, rca.price
-    HAVING (rca.amount - COALESCE(
-            (SELECT COUNT(rba3.id)
-            FROM RoomAparmentBooking rba3
-            JOIN rba3.room ra3
-            WHERE ra3.roomConfiguration.id = rca.id
-            AND rba3.status IN (1, 3, 0)
-            AND (:checkOut IS NULL OR rba3.startDate < :checkOut)
-            AND (:checkIn IS NULL OR rba3.endDate > :checkIn)), 0
-        )) >= :rooms
+    HAVING (
+        (:checkIn IS NULL AND :checkOut IS NULL) OR
+        (
+            (rca.amount - COALESCE(
+                (SELECT COUNT(rba3.id)
+                FROM RoomAparmentBooking rba3
+                JOIN rba3.room ra3
+                WHERE ra3.roomConfiguration.id = rca.id
+                AND rba3.status IN (1, 3, 0)
+                AND ((:checkOut IS NULL OR rba3.startDate < :checkOut)
+                AND (:checkIn IS NULL OR rba3.endDate > :checkIn))
+                ), 0
+            )) >= :rooms
+        )
+    )
     AND (
         (:rooms = 1 AND rca.roomConfiguration.capacity >= (:adults + :children))
         OR
@@ -254,8 +251,9 @@ WHERE hi.hotel.code = :hotelCode
                 JOIN rba4.room ra4
                 WHERE ra4.roomConfiguration.id = rca.id
                 AND rba4.status IN (1, 3, 0)
-                AND (:checkOut IS NULL OR rba4.startDate < :checkOut)
-                AND (:checkIn IS NULL OR rba4.endDate > :checkIn)), 0
+                AND ((:checkOut IS NULL OR rba4.startDate < :checkOut)
+                AND (:checkIn IS NULL OR rba4.endDate > :checkIn))
+                ), 0
             )) >= (:adults + :children))
         ))
     )
