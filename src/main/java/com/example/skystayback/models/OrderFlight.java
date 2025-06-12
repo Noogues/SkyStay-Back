@@ -16,14 +16,14 @@ public class OrderFlight {
     @Column(name = "id", nullable = false, unique = true)
     private Long id;
 
-    @Column(name = "code", nullable = false, length = 10, unique = true)
+    @Column(name = "code", nullable = false, length = 16, unique = true)
     private String code;
 
     @Column(name = "amount", nullable = false, scale = 2)
-    private Float amount;
+    private Double amount;
 
     @Column(name = "discount", nullable = false, scale = 2)
-    private Float discount;
+    private Double discount;
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.ORDINAL)
@@ -31,10 +31,5 @@ public class OrderFlight {
 
     @Column(columnDefinition = "LONGBLOB", name = "bill")
     private byte[] bill;
-
-    @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-    @JoinColumn(name = "seat_booking_id")
-    private SeatBooking seatBooking;
-
 
 }
