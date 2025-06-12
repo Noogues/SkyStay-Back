@@ -12,11 +12,15 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import com.example.skystayback.repositories.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+
 
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 @Service
@@ -24,6 +28,23 @@ import java.util.function.Function;
 public class JwtService {
 
     private static final String SECRETkEY = "375ec1bfd98afb0e55aa10907716db40941a160687ba7dd09bdc3ec9a39206dd";
+
+    @Autowired
+    private UserRepository userRepository;
+
+    public User getUserFromToken(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return null;
+        }
+        String token = authHeader.substring(7);
+        String email = extractUsername(token); // O userCode si corresponde
+        if (email == null) {
+            return null;
+        }
+        return Optional.ofNullable(userRepository.findByEmail(email)).orElse(null);
+        // Si el claim es userCode, usa:
+        // return userRepository.getUserByUserCode(email);
+    }
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);

@@ -13,7 +13,9 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
-
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ApartmentRepository extends JpaRepository<Apartment, Long> {
@@ -38,4 +40,19 @@ public interface ApartmentRepository extends JpaRepository<Apartment, Long> {
                 WHERE a.code = :hotelCode
             """)
     ShowHotelDetails findApartmentDetailsByCode(@Param("hotelCode") String hotelCode);
+
+//    @Query("""
+//          SELECT a FROM Apartment a
+//          JOIN a.city c
+//          WHERE (:destination IS NULL OR c.name LIKE %:destination% OR a.address LIKE %:destination%)
+//          AND a.capacity >= :adults + :children
+//          """)
+//    List<Apartment> findByFilters(
+//            @Param("destination") String destination,
+//            @Param("checkIn") LocalDate checkIn,
+//            @Param("checkOut") LocalDate checkOut,
+//            @Param("adults") Integer adults,
+//            @Param("children") Integer children,
+//            @Param("rooms") Integer rooms
+//    );
 }

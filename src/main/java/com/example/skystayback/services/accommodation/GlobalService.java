@@ -1,0 +1,302 @@
+package com.example.skystayback.services.accommodation;
+
+import com.example.skystayback.dtos.common.*;
+import com.example.skystayback.dtos.hotel.RoomVO;
+import com.example.skystayback.enums.StatusRoomBooking;
+import com.example.skystayback.models.*;
+import com.example.skystayback.repositories.HotelRepository;
+import com.example.skystayback.repositories.RoomBookingRepository;
+import com.example.skystayback.repositories.RoomAparmentBookingRepository;
+import com.example.skystayback.repositories.RoomApartmentRepository;
+import com.example.skystayback.repositories.RoomRepository;
+import com.example.skystayback.security.JwtService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class GlobalService {
+
+    @Autowired
+    private HotelRepository hotelRepository;
+    @Autowired
+    private RoomBookingRepository roomBookingRepository;
+    @Autowired
+    private RoomAparmentBookingRepository roomAparmentBookingRepository;
+    @Autowired
+    private RoomApartmentRepository roomApartmentRepository;
+    @Autowired
+    private RoomRepository roomRepository;
+    @Autowired
+    private JwtService jwtService;
+
+    public ResponseVO<List<AccommodationResponseVO>> searchAccommodations(
+            String destination,
+            LocalDate checkIn,
+            LocalDate checkOut,
+            Integer adults,
+            Integer children,
+            Integer rooms,
+            String type) {
+
+        List<AccommodationResponseVO> hotels = findByFilters(destination, checkIn, checkOut, adults, children, rooms, type);
+
+        return ResponseVO.<List<AccommodationResponseVO>>builder()
+                .response(new DataVO<>(hotels))
+                .messages(new MessageResponseVO("Alojamientos encontrados", 200, LocalDateTime.now()))
+                .build();
+    }
+
+    private List<AccommodationResponseVO> findByFilters(
+            String destination,
+            LocalDate checkIn,
+            LocalDate checkOut,
+            Integer adults,
+            Integer children,
+            Integer rooms,
+            String type) {
+
+        List<AccommodationResponseVO> accommodations = new ArrayList<>();
+
+        // Si no se especifica tipo o se solicitan hoteles, buscar hoteles
+        if (type == null || "hotel".equalsIgnoreCase(type)) {
+            List<AccommodationResponseVO> hotels = hotelRepository.findHotelsByDestination(destination);
+            for (AccommodationResponseVO hotel : hotels) {
+                hotel.setAccommodationType("hotel"); // Establecer el tipo
+                List<RoomDetailsVO> availableRooms = hotelRepository.findAvailableRoomsByHotel(
+                        hotel.getCode(), checkIn, checkOut, rooms, adults, children);
+                hotel.setAvailableRooms(availableRooms);
+                if (!availableRooms.isEmpty()) {
+                    accommodations.add(hotel);
+                }
+            }
+        }
+
+        // Si no se especifica tipo o se solicitan apartamentos, buscar apartamentos
+        if (type == null || "apartment".equalsIgnoreCase(type)) {
+            List<AccommodationResponseVO> apartments = hotelRepository.findApartmentsByDestination(destination);
+            for (AccommodationResponseVO apartment : apartments) {
+                apartment.setAccommodationType("apartment"); // Establecer el tipo
+                List<RoomDetailsVO> availableRooms = hotelRepository.findAvailableRoomsByApartment(
+                        apartment.getCode(), checkIn, checkOut, rooms, adults, children);
+                apartment.setAvailableRooms(availableRooms);
+                if (!availableRooms.isEmpty()) {
+                    accommodations.add(apartment);
+                }
+            }
+        }
+
+        return accommodations;
+    }
+
+    public List<String> getAllCities() {
+        return hotelRepository.findAllCities();
+    }
+
+    public List<DestinationVO> getDestinations() {
+        Pageable limit = PageRequest.of(0, 3);
+        List<DestinationVO> hotels = hotelRepository.findRandomHotels(limit);
+        List<DestinationVO> apartments = hotelRepository.findRandomApartments(limit);
+
+        List<DestinationVO> combined = new ArrayList<>();
+        combined.addAll(hotels);
+        combined.addAll(apartments);
+
+        if (combined.size() < 6) {
+            if (hotels.size() < 3) {
+                combined.addAll(hotelRepository.findRandomHotels(PageRequest.of(0, 3 - combined.size())));
+            }
+            if (apartments.size() < 3 && combined.size() < 3) {
+                combined.addAll(hotelRepository.findRandomApartments(PageRequest.of(0, 3 - combined.size())));
+            }
+        }
+
+        return combined.stream().limit(6).collect(Collectors.toList());
+    }
+
+    public List<DestinationVO> getTopRatedDestinations() {
+        Pageable limit = PageRequest.of(0, 3);
+        List<DestinationVO> topHotels = hotelRepository.findTopRatedHotels(limit);
+        List<DestinationVO> topApartments = hotelRepository.findTopRatedApartments(limit);
+
+        List<DestinationVO> combined = new ArrayList<>();
+        combined.addAll(topHotels);
+        combined.addAll(topApartments);
+
+        int total = combined.size();
+
+        if (total < 6) {
+            if (topHotels.size() < 3) {
+                int needed = 6 - total;
+                List<DestinationVO> moreApartments = hotelRepository.findTopRatedApartments(PageRequest.of(0, needed));
+                moreApartments.removeAll(topApartments);
+                combined.addAll(moreApartments);
+            }
+            if (combined.size() < 6 && topApartments.size() < 3) {
+                int needed = 6 - combined.size();
+                List<DestinationVO> moreHotels = hotelRepository.findTopRatedHotels(PageRequest.of(0, needed));
+                moreHotels.removeAll(topHotels);
+                combined.addAll(moreHotels);
+            }
+        }
+
+        if (topHotels.isEmpty()) {
+            combined = hotelRepository.findTopRatedApartments(PageRequest.of(0, 6));
+        }
+        if (topApartments.isEmpty()) {
+            combined = hotelRepository.findTopRatedHotels(PageRequest.of(0, 6));
+        }
+
+        return combined.stream().limit(6).collect(Collectors.toList());
+    }
+
+    public ResponseVO<AccommodationDetailVO> getAccommodationDetail(
+            String code,
+            String typeAccomodation,
+            LocalDate checkIn,
+            LocalDate checkOut,
+            Integer adults,
+            Integer children,
+            Integer rooms) {
+
+        AccommodationDetailVO accommodationDetail;
+        List<String> images;
+        List<RoomDetailsVO> availableRooms;
+
+        // Parámetros efectivos
+        Integer effectiveAdults = adults != null ? adults : 1;
+        Integer effectiveChildren = children != null ? children : 0;
+        Integer effectiveRooms = rooms != null ? rooms : 1;
+
+        if ("apartment".equalsIgnoreCase(typeAccomodation)) {
+            accommodationDetail = hotelRepository.findApartmentDetailById(code);
+            if (accommodationDetail == null) {
+                return ResponseVO.<AccommodationDetailVO>builder()
+                        .response(null)
+                        .messages(new MessageResponseVO("No se encontró el alojamiento", 404, LocalDateTime.now()))
+                        .build();
+            }
+            images = hotelRepository.findAllApartmentImages(code);
+            availableRooms = hotelRepository.findAvailableRoomsByApartment(
+                    code, checkIn, checkOut, effectiveRooms, effectiveAdults, effectiveChildren);
+            accommodationDetail.setAccommodationType("apartment");
+        } else { // Por defecto, hotel
+            accommodationDetail = hotelRepository.findHotelDetailById(code);
+            if (accommodationDetail == null) {
+                return ResponseVO.<AccommodationDetailVO>builder()
+                        .response(null)
+                        .messages(new MessageResponseVO("No se encontró el alojamiento", 404, LocalDateTime.now()))
+                        .build();
+            }
+            images = hotelRepository.findAllHotelImages(code);
+            availableRooms = hotelRepository.findAvailableRoomsByHotel(
+                    code, checkIn, checkOut, effectiveRooms, effectiveAdults, effectiveChildren);
+            accommodationDetail.setAccommodationType("hotel");
+        }
+
+        accommodationDetail.setImages(images);
+        accommodationDetail.setAvailableRooms(availableRooms);
+
+        return ResponseVO.<AccommodationDetailVO>builder()
+                .response(new DataVO<>(accommodationDetail))
+                .messages(new MessageResponseVO("Detalles del alojamiento obtenidos correctamente", 200, LocalDateTime.now()))
+                .build();
+    }
+
+    public List<LocalDate> getAvailableDates(List<Long> roomConfigIds, LocalDate startDate, LocalDate endDate) {
+        List<java.sql.Date> dates = roomBookingRepository.findAvailableDates(
+                roomConfigIds,
+                java.sql.Date.valueOf(startDate),
+                java.sql.Date.valueOf(endDate)
+        );
+        return dates.stream().map(java.sql.Date::toLocalDate).toList();
+    }
+
+    public List<LocalDate> getAvailableDatesApartment(List<Long> roomConfigIds, LocalDate startDate, LocalDate endDate) {
+        List<java.sql.Date> dates = roomBookingRepository.findAvailableDatesAp(
+                roomConfigIds,
+                java.sql.Date.valueOf(startDate),
+                java.sql.Date.valueOf(endDate)
+        );
+        return dates.stream().map(java.sql.Date::toLocalDate).toList();
+    }
+
+    public ResponseVO<Void> realizarReserva(RealizarReservaRequest request, String authHeader, LocalDate startDate, LocalDate endDate) {
+        if (request.getRooms() == null || request.getRooms().isEmpty()) {
+            return ResponseVO.<Void>builder()
+                    .messages(new MessageResponseVO("No se han seleccionado habitaciones", 400, java.time.LocalDateTime.now()))
+                    .build();
+        }
+        if (request.getAccommodationCode() == null || request.getAccommodationType() == null) {
+            return ResponseVO.<Void>builder()
+                    .messages(new MessageResponseVO("Datos de alojamiento incompletos", 400, java.time.LocalDateTime.now()))
+                    .build();
+        }
+        User user = jwtService.getUserFromToken(authHeader);
+        if (user == null) {
+            return ResponseVO.<Void>builder()
+                    .messages(new MessageResponseVO("Usuario no autenticado", 401, java.time.LocalDateTime.now()))
+                    .build();
+        }
+        try {
+            if ("apartment".equalsIgnoreCase(request.getAccommodationType())) {
+                for (RoomSelectionRequest selection : request.getRooms()) {
+                    List<RoomApartment> allRooms = roomApartmentRepository.findAllRoomsByRoomConfigurationId(selection.getRoomConfigId());
+                    List<RoomApartment> freeRooms = allRooms.stream().limit(selection.getQty()).toList();
+                    if (freeRooms.size() < selection.getQty()) {
+                        return ResponseVO.<Void>builder()
+                            .messages(new MessageResponseVO("No hay suficientes habitaciones/apartamentos libres para la configuración " + selection.getRoomConfigId(), 400, java.time.LocalDateTime.now()))
+                            .build();
+                    }
+                    for (int i = 0; i < selection.getQty(); i++) {
+                        RoomApartment room = freeRooms.get(i);
+                        RoomAparmentBooking booking = new RoomAparmentBooking();
+                        booking.setRoom(room);
+                        booking.setUser(user);
+                        booking.setStartDate(startDate);
+                        booking.setEndDate(endDate);
+                        booking.setStatus(StatusRoomBooking.CONFIRMED);
+                        roomAparmentBookingRepository.save(booking);
+                    }
+                }
+                return ResponseVO.<Void>builder()
+                        .messages(new MessageResponseVO("Reserva de apartamento realizada con éxito", 200, java.time.LocalDateTime.now()))
+                        .build();
+            } else {
+                for (RoomSelectionRequest selection : request.getRooms()) {
+                    List<Room> allRooms = roomRepository.findAllRoomsByRoomConfigurationId(selection.getRoomConfigId());
+                    List<Room> freeRooms = allRooms.stream().limit(selection.getQty()).toList();
+                    if (freeRooms.size() < selection.getQty()) {
+                        return ResponseVO.<Void>builder()
+                            .messages(new MessageResponseVO("No hay suficientes habitaciones libres para la configuración " + selection.getRoomConfigId(), 400, java.time.LocalDateTime.now()))
+                            .build();
+                    }
+                    for (int i = 0; i < selection.getQty(); i++) {
+                        Room room = freeRooms.get(i);
+                        RoomBooking booking = new RoomBooking();
+                        booking.setRoom(room);
+                        booking.setUser(user);
+                        booking.setStartDate(startDate);
+                        booking.setEndDate(endDate);
+                        booking.setStatus(StatusRoomBooking.CONFIRMED);
+                        roomBookingRepository.save(booking);
+                    }
+                }
+                return ResponseVO.<Void>builder()
+                        .messages(new MessageResponseVO("Reserva de hotel realizada con éxito", 200, java.time.LocalDateTime.now()))
+                        .build();
+            }
+        } catch (Exception e) {
+            return ResponseVO.<Void>builder()
+                    .messages(new MessageResponseVO("Error al realizar la reserva: " + e.getMessage(), 500, java.time.LocalDateTime.now()))
+                    .build();
+        }
+    }
+
+}
