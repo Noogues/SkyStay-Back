@@ -57,12 +57,12 @@ public class UserAdminController {
         return userService.getOrderApartment(userCode, pageVO);
     }
 
-    @GetMapping("/{userCode}/order-flights")
-    public ResponsePaginatedVO<OrderFlightVO> getOrderFlight(@PathVariable String userCode, @RequestParam(defaultValue = "30") Integer limit, @RequestParam(defaultValue = "0") Integer page) {
-
-        PageVO pageVO = new PageVO(limit, page);
-        return userService.getOrderFlight(userCode, pageVO);
-    }
+//    @GetMapping("/{userCode}/order-flights")
+//    public ResponsePaginatedVO<OrderFlightVO> getOrderFlight(@PathVariable String userCode, @RequestParam(defaultValue = "30") Integer limit, @RequestParam(defaultValue = "0") Integer page) {
+//
+//        PageVO pageVO = new PageVO(limit, page);
+//        return userService.getOrderFlight(userCode, pageVO);
+//    }
 
     @GetMapping("/{userCode}/order-hotels")
     public ResponsePaginatedVO<OrderHotelVO> getOrderHotel(@PathVariable String userCode, @RequestParam(defaultValue = "30") Integer limit, @RequestParam(defaultValue = "0") Integer page) {
