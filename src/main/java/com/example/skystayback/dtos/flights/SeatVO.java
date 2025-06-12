@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class MealVO {
-    private String code;
+public class SeatVO {
+    private Long id;
+    private String seatRow;
+    private String seatColumn;
+    private Boolean state;
 }

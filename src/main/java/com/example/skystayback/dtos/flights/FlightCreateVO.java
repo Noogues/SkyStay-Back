@@ -1,6 +1,5 @@
 package com.example.skystayback.dtos.flights;
 
-import com.example.skystayback.dtos.meal.MealTableVO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,5 +20,5 @@ public class FlightCreateVO {
 
     private List<CabinsPriceVO> cabins;
 
-    private List<MealVO> meals;
+    private List<MealFlightsVO> meals;
 }
