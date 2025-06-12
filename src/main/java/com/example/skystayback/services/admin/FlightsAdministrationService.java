@@ -109,7 +109,7 @@ public class FlightsAdministrationService {
                 }
             }
 
-            for (MealVO meal : form.getMeals()) {
+            for (MealFlightsVO meal : form.getMeals()) {
                 if (meal.getCode() == null || meal.getCode().isEmpty()) {
                     return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("El código de la comida no puede estar vacío", 400, LocalDateTime.now()));
                 }

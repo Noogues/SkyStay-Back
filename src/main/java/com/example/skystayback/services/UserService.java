@@ -250,16 +250,9 @@ public class UserService implements UserDetailsService {
             return new ResponseVO<>(null, new MessageResponseVO("Token no proporcionado o inválido", 401, LocalDateTime.now()));
         }
         try{
-            String tokenWithoutBearer = token.replace("Bearer ", "");
-
-            String email = jwtService.extractUsername(tokenWithoutBearer);
-
-            User user = userRepository.findTopByEmail(email)
-                    .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
-
+            User user = getUser(token);
             String name = user.getName();
             String rol = user.getRol().toString().split("_")[1];
-
             new TokenDecodeVO();
             TokenDecodeVO tokenDecodeVO = TokenDecodeVO.builder().name(name).role(rol).build();
 
@@ -272,6 +265,15 @@ public class UserService implements UserDetailsService {
         }catch (Exception e){
             return new ResponseVO<>(null, new MessageResponseVO("Error al intentar descodificar el token:", 400, LocalDateTime.now()));
         }
+    }
+
+    public User getUser(String token) {
+        String tokenWithoutBearer = token.replace("Bearer ", "");
+
+        String email = jwtService.extractUsername(tokenWithoutBearer);
+
+        return userRepository.findTopByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
     }
 
     public ResponseVO<MessageResponseVO> resendCode(String email) {
