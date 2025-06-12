@@ -1,11 +1,7 @@
 package com.example.skystayback.models;
 
-import com.example.skystayback.enums.StatusRoomBooking;
 import jakarta.persistence.*;
 import lombok.Data;
-
-import java.math.BigInteger;
-import java.time.LocalDate;
 
 @Data
 @Entity
@@ -18,14 +14,29 @@ public class SeatBooking {
     private Long id;
 
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-    @JoinColumn(name = "flight_id")
-    private Flight flight;
-
-    @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-    @JoinColumn(name = "seat_id")
-    private Seat seat;
+    @JoinColumn(name = "flight_seat_status_id")
+    private FlightSeatStatus flightSeatStatus;
 
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private User user;
+
+    @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+    @JoinColumn(name = "order_flight_id")
+    private OrderFlight orderFlight;
+
+    @Column(name = "name", nullable = false, length = 80)
+    private String name;
+
+    @Column(name = "surnames", nullable = false, length = 100)
+    private String surnames;
+
+    @Column(name = "email", nullable = false, length = 60)
+    private String email;
+
+    @Column(name = "nif", nullable = false, length = 50)
+    private String nif;
+
+    @Column(name = "phone", nullable = false, length = 20)
+    private String phone;
 }

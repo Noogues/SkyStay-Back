@@ -41,9 +41,9 @@ public interface UserRepository  extends JpaRepository<User, Long> {
             "FROM OrderApartment oa WHERE oa.roomBooking.user.userCode = :userCode")
     Page<OrderApartmentVO> findAllOrderApartmentByUserId(@Param("userCode") String userCode, Pageable pageable);
 
-    @Query("SELECT new com.example.skystayback.dtos.user.OrderFlightVO(o.seatBooking.flight.code, o.code, o.amount, o.discount, o.status, o.bill) " +
-            "FROM OrderFlight o WHERE o.seatBooking.user.userCode = :userCode")
-    Page<OrderFlightVO> findAllOrderFlightByUserId(@Param("userCode") String userCode, Pageable pageable);
+//    @Query("SELECT new com.example.skystayback.dtos.user.OrderFlightVO(o.seatBooking.flightSeatStatus.flight.code, o.code, o.amount, o.discount, o.status, o.bill) " +
+//            "FROM OrderFlight o WHERE o..user.userCode = :userCode")
+//    Page<OrderFlightVO> findAllOrderFlightByUserId(@Param("userCode") String userCode, Pageable pageable);
 
     @Query("SELECT new com.example.skystayback.dtos.user.OrderHotelVO(r.roomNumber, oh.roomBooking.room.roomConfiguration.roomConfiguration.type, oh.code, oh.amount, oh.discount, oh.status, oh.bill) " +
             "FROM OrderHotel oh JOIN oh.roomBooking.room r " +

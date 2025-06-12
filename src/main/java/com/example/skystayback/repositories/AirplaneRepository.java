@@ -30,7 +30,8 @@ public interface AirplaneRepository extends JpaRepository<Airplane, Long> {
                 at.name,
                 at.manufacturer,
                 at.capacity
-            )
+            ),
+            a.airline.name
         )
         FROM Airplane a JOIN a.airplaneType at
         left join AirplaneImage ai on a.id = ai.airplane.id
@@ -48,7 +49,8 @@ public interface AirplaneRepository extends JpaRepository<Airplane, Long> {
         a.status,
         at.name,
         at.manufacturer,
-        at.capacity
+        at.capacity,
+        a.airline.name
     )
     FROM Airplane a
     JOIN a.airplaneType at

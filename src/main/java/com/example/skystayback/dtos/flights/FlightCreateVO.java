@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -16,4 +17,8 @@ public class FlightCreateVO {
     private Long departureAirportId;
     private Long arrivalAirportId;
     private Long airplaneId;
+
+    private List<CabinsPriceVO> cabins;
+
+    private List<MealFlightsVO> meals;
 }

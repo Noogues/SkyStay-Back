@@ -1,6 +1,7 @@
 package com.example.skystayback.services.admin;
 
 
+import com.example.skystayback.dtos.airline.AirlineReducedVO;
 import com.example.skystayback.dtos.airplanes.*;
 import com.example.skystayback.dtos.common.*;
 import com.example.skystayback.enums.AirplaneTypeEnum;
@@ -29,6 +30,7 @@ public class AirplaneAdministrationService {
     private final SeatRepository seatRepository;
     private final ImageRepository imageRepository;
     private final AirplaneImageRepository airplaneImageRepository;
+    private final AirlineRepository airlineRepository;
 
     /**
      * Obtiene todos los aviones de la base de datosm paginados dependiendo de los parámetros de la clase PageVO que se le pase.
@@ -87,8 +89,8 @@ public class AirplaneAdministrationService {
      */
     public ResponseVO<Long> createAirplanePart1(AirplaneForm1VO form) {
         try {
-            AirplaneType at = airplaneTypeRepository.findById(form.getAirplane_type_id()).orElseThrow(() -> new IllegalArgumentException("No se encontró el tipo de avión con el Id proporcionado"));
-
+            AirplaneType at = airplaneTypeRepository.findById(form.getAirplane_type_id()).orElseThrow(() -> new IllegalArgumentException("No se encontró el tipo de avión con el id proporcionado"));
+            Airline airline = airlineRepository.findById(form.getAirline_id()).orElseThrow(() -> new IllegalArgumentException("No se encontró el la aerolínea con el id proporcionado"));
             Airplane airplane = new Airplane();
             String code;
             do {
@@ -101,9 +103,11 @@ public class AirplaneAdministrationService {
             airplane.setYearOfManufacture(form.getYearOfManufacture());
             airplane.setStatus(Status.valueOf(form.getStatus()));
             airplane.setType(AirplaneTypeEnum.valueOf(form.getType()));
-
             airplane.setAirplaneType(at);
+
+            airplane.setAirline(airline);
             airplane = airplaneRepository.save(airplane);
+
             return new ResponseVO<>(new DataVO<>(airplane.getId()), new MessageResponseVO("Tipo de avión y avión creados con éxito.", 200, LocalDateTime.now()));
         } catch (Exception e) {
             System.out.println("createAirplanePart1: " + e.getMessage());
@@ -153,17 +157,11 @@ public class AirplaneAdministrationService {
                             Seat seat = new Seat();
                             seat.setSeatRow(String.valueOf(row));
                             seat.setSeatColumn(seatLetter);
-                            seat.setState(true);
                             seat.setCabin(airplaneCabin);
                             seatRepository.save(seat);
                             totalSeats++;
                         }
                     }
-                }
-
-                // Validar si se alcanzó la capacidad del avión
-                if (totalSeats < plane.getAirplaneType().getCapacity() && af.equals(form.get(form.size() - 1))) {
-                    throw new IllegalArgumentException("El número total de asientos creados no alcanza la capacidad del avión.");
                 }
             }
 
@@ -188,7 +186,15 @@ public class AirplaneAdministrationService {
         }
     }
 
-
+    public ResponseVO<List<AirlineReducedVO>> getAllAirlines() {
+        try {
+            List<AirlineReducedVO> list = airlineRepository.getAllAirlinesReducedNotPageable();
+            return new ResponseVO<>(new DataVO<>(list), new MessageResponseVO("Aerolineas recuperadas con exito.", 200, LocalDateTime.now()));
+        } catch (Exception e) {
+            System.out.println("getAllSeatClassEnum: " + e.getMessage());
+            return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error al recuperar las aerolineas de asientos", 404, LocalDateTime.now()));
+        }
+    }
     /**
      * Obtiene todas las configuraciones de asientos de la base de datos.
      * @return response que devuelve los datos y un mensaje de éxito o error.
@@ -311,11 +317,11 @@ public class AirplaneAdministrationService {
             List<CabinWithSeatsVO> cabinsWithSeats = new ArrayList<>();
 
             for (AirplaneCabin cabin : cabins) {
-                List<Seat> cabinSeats = seatRepository.findByCabinId(cabin.getId());
+                List<Seat> cabinSeats = seatRepository.findSeatsByCabinId(cabin.getId());
                 List<SeatVO> seatVOs = new ArrayList<>();
 
                 for (Seat seat : cabinSeats) {
-                    seatVOs.add(new SeatVO(seat.getId(), seat.getSeatRow(), seat.getSeatColumn(), seat.getState()));
+                    seatVOs.add(new SeatVO(seat.getId(), seat.getSeatRow(), seat.getSeatColumn()));
                 }
 
                 CabinWithSeatsVO cabinWithSeats = new CabinWithSeatsVO(cabin.getId(), cabin.getSeatConfiguration().getSeatPattern(), cabin.getRowStart(), cabin.getRowEnd(), cabin.getSeatClass(), seatVOs);

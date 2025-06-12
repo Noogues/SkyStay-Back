@@ -1,14 +1,9 @@
 package com.example.skystayback.services.admin;
 
 import com.example.skystayback.dtos.common.*;
-import com.example.skystayback.dtos.flights.FlightCreateVO;
-import com.example.skystayback.dtos.flights.FlightsDetailsVO;
-import com.example.skystayback.dtos.flights.FlightsTableVO;
+import com.example.skystayback.dtos.flights.*;
 import com.example.skystayback.enums.FlightStatus;
-import com.example.skystayback.models.Airline;
-import com.example.skystayback.models.Airplane;
-import com.example.skystayback.models.Airport;
-import com.example.skystayback.models.Flight;
+import com.example.skystayback.models.*;
 import com.example.skystayback.repositories.*;
 import com.example.skystayback.services.UserService;
 import lombok.AllArgsConstructor;
@@ -29,6 +24,11 @@ public class FlightsAdministrationService {
     private final AirlineRepository airlineRepository;
     private final AirportRepository airportRepository;
     private final AirplaneRepository airplaneRepository;
+    private final AirplaneCabinRepository airplaneCabinRepository;
+    private final FlightSeatStatusRepository flightSeatStatusRepository;
+    private final SeatRepository seatRepository;
+    private final MealRepository mealRepository;
+    private final FlightMealRepository flightMealRepository;
 
     /**
      * Recupera todos los vuelos paginados.
@@ -92,7 +92,34 @@ public class FlightsAdministrationService {
             Airplane airplane = airplaneRepository.findById(form.getAirplaneId()).orElseThrow(() -> new IllegalArgumentException("Avion no encontrado"));
             flight.setAirplane(airplane);
 
-            flightRepository.save(flight);
+            flight = flightRepository.save(flight);
+
+            for (CabinsPriceVO cabin : form.getCabins()) {
+                if (cabin.getPrice() <= 0) {
+                    return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("El precio de la cabina debe ser mayor a 0", 400, LocalDateTime.now()));
+                }
+                List<Seat> seats = seatRepository.findSeatsByCabinId(cabin.getId());
+                for (Seat seat : seats) {
+                    FlightSeatStatus item = new FlightSeatStatus();
+                    item.setFlight(flight);
+                    item.setSeat(seat);
+                    item.setState(true);
+                    item.setPrice(cabin.getPrice());
+                    flightSeatStatusRepository.save(item);
+                }
+            }
+
+            for (MealFlightsVO meal : form.getMeals()) {
+                if (meal.getCode() == null || meal.getCode().isEmpty()) {
+                    return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("El código de la comida no puede estar vacío", 400, LocalDateTime.now()));
+                }
+                Meal mealItem = mealRepository.findByCode(meal.getCode()).orElseThrow(() -> new IllegalArgumentException("Comida no encontrada con el código: " + meal.getCode()));
+                FlightMeal flightMeal = new FlightMeal();
+                flightMeal.setFlight(flight);
+                flightMeal.setMeal(mealItem);
+                flightMealRepository.save(flightMeal);
+            }
+
             return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Vuelo creado con éxito", 200, LocalDateTime.now()));
         }catch (Exception e) {
             System.out.println("createFlight: " + e.getMessage());
@@ -206,5 +233,34 @@ public class FlightsAdministrationService {
 
         return false;
     }
-}
 
+    /**
+     * Recupera la información de las cabinas de un avión específico.
+     * @param airplaneId ID del avión del cual se desea obtener la información de las cabinas.
+     * @return ResponseVO con la lista de cabinas y un mensaje de éxito o error.
+     */
+    public ResponseVO<List<CabinsVO>> getCabinsInfo(Long airplaneId) {
+        try {
+            List<CabinsVO> cabinsVO = airplaneCabinRepository.getCabinsAirplaneId(airplaneId);
+            return new ResponseVO<>(new DataVO<>(cabinsVO), new MessageResponseVO("Información de cabinas recuperada con éxito.", 200, LocalDateTime.now()));
+        } catch (Exception e) {
+            System.out.println("getCabinsInfo: " + e.getMessage());
+            return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error al recuperar la información de cabinas", 500, LocalDateTime.now()));
+        }
+    }
+
+    /**
+     * Recupera las cabinas disponibles para un vuelo específico basado en su código.
+     * @param code Código del vuelo del cual se desean obtener las cabinas.
+     * @return ResponseVO con la lista de cabinas y un mensaje de éxito o error.
+     */
+    public ResponseVO<List<CabinInfoVO>> getCabinsByCode(String code) {
+        try {
+            List<CabinInfoVO> cabins = flightRepository.findCabinsByFlightCode(code);
+            return new ResponseVO<>(new DataVO<>(cabins), new MessageResponseVO("Cabinas recuperadas con éxito.", 200, LocalDateTime.now()));
+        } catch (Exception e) {
+            System.out.println("getCabinsByCode: " + e.getMessage());
+            return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error al recuperar las cabinas", 500, LocalDateTime.now()));
+        }
+    }
+}

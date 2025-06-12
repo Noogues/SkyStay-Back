@@ -20,5 +20,6 @@ public class AirplaneShowVO {
     private Status status;
     private String image;
     private AirplaneTypeVO airplaneType;
+    private String airlineName;
 
 }

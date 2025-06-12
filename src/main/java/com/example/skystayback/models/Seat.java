@@ -22,10 +22,6 @@ public class Seat {
     @Column(name = "seat_column", nullable = false, length = 10)
     private String seatColumn;
 
-    // True si está ocupado, false si está libre
-    @Column(name = "state", nullable = false)
-    private Boolean state;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "airplane_cabin_id", nullable = false)
     private AirplaneCabin cabin;

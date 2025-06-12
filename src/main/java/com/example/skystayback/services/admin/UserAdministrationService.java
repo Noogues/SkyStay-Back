@@ -135,28 +135,28 @@ public class UserAdministrationService {
         }
     }
 
-    /**
-     * Metodo para obtener las ordenes de vuelos mediante el codigo del usuario
-     * @param userCode codigo del usuario
-     * @param pageVO informacion de paginacion
-     * @return lista de ordenes de vuelos
-     */
-    public ResponsePaginatedVO<OrderFlightVO> getOrderFlight(String userCode, PageVO pageVO) {
-        try {
-            Page<OrderFlightVO> orderFlight = userRepository.findAllOrderFlightByUserId(userCode, pageVO.toPageable());
-            ResponsePaginatedVO<OrderFlightVO> data = new ResponsePaginatedVO<>();
-            data.setObjects(orderFlight.getContent());
-            data.setHasNextPage(orderFlight.hasNext());
-            data.setHasPreviousPage(orderFlight.hasPrevious());
-            data.setCurrentPage(orderFlight.getNumber());
-            data.setTotalPages(orderFlight.getTotalPages());
-            data.setMessages(new MessageResponseVO("Órdenes de vuelos recuperadas con éxito", 200, LocalDateTime.now()));
-            return data;
-        } catch (Exception e) {
-            System.out.println("getOrderFlight: " + e.getMessage());
-            return new ResponsePaginatedVO<>(new MessageResponseVO("Error al recuperar las órdenes de vuelos:", 404, LocalDateTime.now()));
-        }
-    }
+//    /**
+//     * Metodo para obtener las ordenes de vuelos mediante el codigo del usuario
+//     * @param userCode codigo del usuario
+//     * @param pageVO informacion de paginacion
+//     * @return lista de ordenes de vuelos
+//     */
+//    public ResponsePaginatedVO<OrderFlightVO> getOrderFlight(String userCode, PageVO pageVO) {
+//        try {
+//            Page<OrderFlightVO> orderFlight = userRepository.findAllOrderFlightByUserId(userCode, pageVO.toPageable());
+//            ResponsePaginatedVO<OrderFlightVO> data = new ResponsePaginatedVO<>();
+//            data.setObjects(orderFlight.getContent());
+//            data.setHasNextPage(orderFlight.hasNext());
+//            data.setHasPreviousPage(orderFlight.hasPrevious());
+//            data.setCurrentPage(orderFlight.getNumber());
+//            data.setTotalPages(orderFlight.getTotalPages());
+//            data.setMessages(new MessageResponseVO("Órdenes de vuelos recuperadas con éxito", 200, LocalDateTime.now()));
+//            return data;
+//        } catch (Exception e) {
+//            System.out.println("getOrderFlight: " + e.getMessage());
+//            return new ResponsePaginatedVO<>(new MessageResponseVO("Error al recuperar las órdenes de vuelos:", 404, LocalDateTime.now()));
+//        }
+//    }
 
     /**
      * Metodo para obtener las ordenes de hoteles mediante el codigo del usuario

@@ -1,14 +1,13 @@
 package com.example.skystayback.controllers.admin;
 
 import com.example.skystayback.dtos.common.*;
-import com.example.skystayback.dtos.flights.FlightCreateVO;
-import com.example.skystayback.dtos.flights.FlightsDetailsVO;
-import com.example.skystayback.dtos.flights.FlightsTableVO;
+import com.example.skystayback.dtos.flights.*;
 import com.example.skystayback.enums.FlightStatus;
 import com.example.skystayback.services.admin.FlightsAdministrationService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 @AllArgsConstructor
@@ -42,6 +41,11 @@ public class FlightsAdminController {
     @GetMapping("/generate/random")
     public ResponseVO<Void> generateRandomFlights(@RequestParam Integer amount) {
         return flightsService.generateRandomFlights(amount);
+    }
+
+    @GetMapping("/cabins/{code}")
+    public ResponseVO<List<CabinInfoVO>> getCabinsByCode(@PathVariable String code) {
+        return flightsService.getCabinsByCode(code);
     }
 
 }

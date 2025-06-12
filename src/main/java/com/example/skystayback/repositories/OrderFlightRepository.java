@@ -10,4 +10,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface OrderFlightRepository extends JpaRepository<OrderFlight, Long> {
 
+    boolean existsByCode(String code);
 }
