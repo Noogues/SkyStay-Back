@@ -3,8 +3,6 @@ package com.example.skystayback.models;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.math.BigInteger;
-
 @Data
 @Entity
 @Table(name = "apartment_image")
@@ -22,6 +20,4 @@ public class ApartmentImage {
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     @JoinColumn(name = "image_id")
     private Image image;
-
-
 }
