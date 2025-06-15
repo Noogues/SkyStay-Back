@@ -40,7 +40,7 @@ public class FlightsController {
     }
 
     @PostMapping("/purchase/{flightCode}")
-    public ResponseVO<Void> purchaseTicketsFlight(@PathVariable String flightCode, @RequestBody List<FlightPurchaseVO> flightPurchaseDTO, @RequestHeader("Authorization") String token) {
-        return flightsService.purchaseTicketsFlight(flightCode, flightPurchaseDTO, token);
+    public ResponseVO<Void> purchaseTicketsFlight(@PathVariable String flightCode, @RequestBody List<FlightPurchaseVO> flightPurchaseDTO, @RequestHeader("Authorization") String token,  @RequestParam(required = false) String language) {
+        return flightsService.purchaseTicketsFlight(flightCode, flightPurchaseDTO, token, language);
     }
 }

@@ -7,7 +7,8 @@ public enum EmailTemplateType {
     REGISTRATION("registration"),
     RESET_PASSWORD("resetPassword"),
     BOOKING_CONFIRMATION("booking_confirmation"),
-    PASSWORD_RESET("password_reset");
+    PASSWORD_RESET("password_reset"),
+    FLIGHT_PURCHASE("invoice-template");
 
     private final String templateName;
 
