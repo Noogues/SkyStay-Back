@@ -3,15 +3,16 @@ package com.example.skystayback.models;
 import jakarta.persistence.*;
 import lombok.*;
 
+@Data
 @Entity
 @Table(name = "favourite_hotel")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class FavouriteHotel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false, unique = true)
     private Long id;
 
     @ManyToOne

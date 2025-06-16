@@ -39,6 +39,7 @@ public class SecurityConfiguration {
                     auth.requestMatchers("/admin/**").hasRole("ADMIN");
                     auth.requestMatchers("/admin/**").hasRole("MODERATOR");
                     auth.requestMatchers("/accommodations/**").permitAll();
+                    auth.requestMatchers("/reviews/**").permitAll();
                     auth.anyRequest().authenticated();
                 })
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
