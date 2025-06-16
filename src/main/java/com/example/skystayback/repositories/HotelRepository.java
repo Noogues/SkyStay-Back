@@ -297,7 +297,5 @@ WHERE ai.apartment.code = :apartmentCode
 """)
     List<String> findAllApartmentImages(@Param("apartmentCode") String apartmentCode);
 
-
-
 }
 

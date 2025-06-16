@@ -1,7 +1,6 @@
 package com.example.skystayback.services.accommodation;
 
 import com.example.skystayback.dtos.common.*;
-import com.example.skystayback.dtos.hotel.RoomVO;
 import com.example.skystayback.enums.StatusRoomBooking;
 import com.example.skystayback.models.*;
 import com.example.skystayback.repositories.HotelRepository;
@@ -121,7 +120,7 @@ public class GlobalService {
     }
 
     public List<DestinationVO> getTopRatedDestinations() {
-        Pageable limit = PageRequest.of(0, 3);
+        Pageable limit = PageRequest.of(0, 5);
         List<DestinationVO> topHotels = hotelRepository.findTopRatedHotels(limit);
         List<DestinationVO> topApartments = hotelRepository.findTopRatedApartments(limit);
 
@@ -131,15 +130,15 @@ public class GlobalService {
 
         int total = combined.size();
 
-        if (total < 6) {
-            if (topHotels.size() < 3) {
-                int needed = 6 - total;
+        if (total < 10) {
+            if (topHotels.size() < 5) {
+                int needed = 10 - total;
                 List<DestinationVO> moreApartments = hotelRepository.findTopRatedApartments(PageRequest.of(0, needed));
                 moreApartments.removeAll(topApartments);
                 combined.addAll(moreApartments);
             }
-            if (combined.size() < 6 && topApartments.size() < 3) {
-                int needed = 6 - combined.size();
+            if (combined.size() < 10 && topApartments.size() < 3) {
+                int needed = 10 - combined.size();
                 List<DestinationVO> moreHotels = hotelRepository.findTopRatedHotels(PageRequest.of(0, needed));
                 moreHotels.removeAll(topHotels);
                 combined.addAll(moreHotels);
@@ -147,13 +146,13 @@ public class GlobalService {
         }
 
         if (topHotels.isEmpty()) {
-            combined = hotelRepository.findTopRatedApartments(PageRequest.of(0, 6));
+            combined = hotelRepository.findTopRatedApartments(PageRequest.of(0, 10));
         }
         if (topApartments.isEmpty()) {
-            combined = hotelRepository.findTopRatedHotels(PageRequest.of(0, 6));
+            combined = hotelRepository.findTopRatedHotels(PageRequest.of(0, 10));
         }
 
-        return combined.stream().limit(6).collect(Collectors.toList());
+        return combined.stream().limit(10).collect(Collectors.toList());
     }
 
     public ResponseVO<AccommodationDetailVO> getAccommodationDetail(

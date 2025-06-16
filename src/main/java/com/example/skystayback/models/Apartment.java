@@ -3,8 +3,6 @@ package com.example.skystayback.models;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.math.BigInteger;
-
 @Data
 @Entity
 @Table(name = "apartment")
@@ -46,6 +44,6 @@ public class Apartment {
     @JoinColumn(name = "city_id")
     private City city;
 
-    @Column(name= "amenities")
+    @Column(name = "amenities", length = 500)
     private String amenities;
 }
