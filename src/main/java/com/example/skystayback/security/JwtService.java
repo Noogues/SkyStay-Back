@@ -46,6 +46,10 @@ public class JwtService {
         // return userRepository.getUserByUserCode(email);
     }
 
+    public String extractUserCode(String token) {
+        return extractClaim(token, claims -> claims.get("userCode", String.class));
+    }
+
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
