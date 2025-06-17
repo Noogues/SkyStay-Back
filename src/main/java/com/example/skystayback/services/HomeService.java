@@ -9,7 +9,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 @Service
 @AllArgsConstructor
@@ -25,7 +27,10 @@ public class HomeService {
      */
     public ResponseVO<List<CityImageVO>> listFiveCitys() {
         try {
-            List<CityImageVO> list = cityRepository.allCitiesImages().stream().limit(6).sorted((a, b) -> Math.random() > 0.5 ? 1 : -1).toList();
+            List<CityImageVO> list = cityRepository.allCitiesImages();
+            Random random = new Random(System.nanoTime());
+            Collections.shuffle(list, random);
+            list = list.stream().limit(8).toList();
             return new ResponseVO<>(new DataVO<>(list), new MessageResponseVO("La lista de ciudades con sus imagenes recuperadas con exito", 200, LocalDateTime.now()));
         } catch (Exception e) {
             System.out.println("listFiveCitys: " + e.getMessage());

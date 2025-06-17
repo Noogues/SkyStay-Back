@@ -19,4 +19,6 @@ public interface AirplaneCabinRepository extends JpaRepository<AirplaneCabin, Lo
 
     @Query("SELECT new com.example.skystayback.dtos.flights.CabinsVO(ac.id, ac.seatClass) FROM AirplaneCabin ac WHERE ac.airplane.id = :airplaneId")
     List<CabinsVO> getCabinsAirplaneId(@Param("airplaneId") Long airplaneId);
+
+    List<AirplaneCabin> findByAirplaneId(Long id);
 }

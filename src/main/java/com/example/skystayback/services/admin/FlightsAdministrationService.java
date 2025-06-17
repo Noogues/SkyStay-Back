@@ -11,6 +11,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -142,7 +144,7 @@ public class FlightsAdministrationService {
                 return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Datos insuficientes para generar vuelos", 400, LocalDateTime.now()));
             }
 
-            Random random = new Random(System.nanoTime()); // Semilla más variable
+            Random random = new Random(System.nanoTime());
             int createdCount = 0;
 
             for (int i = 0; i < count; i++) {
@@ -153,7 +155,7 @@ public class FlightsAdministrationService {
                 // Barajar aeropuertos para obtener combinaciones más variadas
                 Collections.shuffle(airports, random);
 
-                Airport departureAirport = airports.getFirst();
+                Airport departureAirport = airports.get(0); // Corregido: usar get(0)
                 Airport arrivalAirport = null;
 
                 for (int j = 1; j < airports.size(); j++) {
@@ -169,9 +171,12 @@ public class FlightsAdministrationService {
                 }
 
                 // Generar fecha aleatoria dentro de las próximas 4 semanas
-                LocalDate startDate = LocalDate.now();
-                LocalDate randomDate = startDate.plusDays(random.nextInt(28));
-                LocalTime randomTime = LocalTime.of(6 + random.nextInt(16), random.nextInt(60));
+                LocalDate startDate = LocalDate.of(2025, 6, 17);
+                LocalDate endDate = LocalDate.of(2025, 7, 1);
+                LocalDate randomDate = startDate.plusDays(random.nextInt((int) ChronoUnit.DAYS.between(startDate, endDate) + 1));
+
+                // Generar hora aleatoria entre 00:00:00 y 23:59:59
+                LocalTime randomTime = LocalTime.of(random.nextInt(24), random.nextInt(60), random.nextInt(60));
                 LocalDateTime departureTime = LocalDateTime.of(randomDate, randomTime);
 
                 // Duración de vuelo aleatoria entre 1 y 6 horas
@@ -187,9 +192,34 @@ public class FlightsAdministrationService {
                 form.setDateTime(departureTime);
                 form.setDateTimeArrival(arrivalTime);
 
+                // Inicializar listas de cabinas y comidas
+                form.setCabins(new ArrayList<>());
+                form.setMeals(new ArrayList<>());
+
+                // Generar cabinas con precios aleatorios
+                List<AirplaneCabin> airplaneCabins = airplaneCabinRepository.findByAirplaneId(airplane.getId());
+                for (AirplaneCabin airplaneCabin : airplaneCabins) {
+                    CabinsPriceVO cabin = new CabinsPriceVO();
+                    cabin.setId(airplaneCabin.getId());
+                    cabin.setPrice((float) (45 + random.nextInt(606)));
+                    form.getCabins().add(cabin);
+                }
+
+                // Seleccionar aleatoriamente entre 3 y 6 comidas
+                int randomMealCount = 3 + random.nextInt(4); // 4 = 6 - 3 + 1
+                List<Meal> allMeals = mealRepository.findAll();
+                Collections.shuffle(allMeals, random);
+                List<Meal> selectedMeals = allMeals.subList(0, Math.min(randomMealCount, allMeals.size()));
+
+                for (Meal meal : selectedMeals) {
+                    MealFlightsVO mealVO = new MealFlightsVO();
+                    mealVO.setCode(meal.getCode());
+                    form.getMeals().add(mealVO);
+                }
+
                 // Verificar si ya existe un vuelo similar esa semana
                 if (isSimilarFlightExists(form)) {
-                    continue; // Evitar duplicados
+                    continue;
                 }
 
                 // Crear el vuelo
