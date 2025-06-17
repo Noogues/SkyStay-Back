@@ -26,9 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.itextpdf.html2pdf.HtmlConverter;
 import org.thymeleaf.TemplateEngine;
@@ -57,8 +55,7 @@ public class FlightsService {
      */
     public ResponsePaginatedVO<FlightClientVO> getAllFlights(PageVO page, String origin, String destination, String airline, Float price) {
         try {
-            Page<FlightClientVO> airplanePage = flightRepository.findAllClientFlightsWithFilters(
-                    page.toPageable(), origin, destination, airline, price);
+            Page<FlightClientVO> airplanePage = flightRepository.findAllClientFlightsWithFilters(page.toPageable(), origin, destination, airline, price);
             ResponsePaginatedVO<FlightClientVO> data = new ResponsePaginatedVO<>();
             data.setObjects(airplanePage.getContent());
             data.setHasNextPage(airplanePage.hasNext());
@@ -106,15 +103,37 @@ public class FlightsService {
     public ResponseVO<List<CabinFlightDetailsVO>> getCabinsForFlightByCode(String flightCode) {
         try {
             List<CabinFlightDetailsVO> cabins = flightRepository.getCabinsForFlightByCode(flightCode);
+
             for (CabinFlightDetailsVO cabin : cabins) {
-                cabin.setSeats(flightRepository.getSeatsForCabin(cabin.getId()));
+                List<SeatVO> rawSeats = flightRepository.getSeatsForCabin(cabin.getId());
+
+                Map<String, SeatVO> uniqueSeatsMap = new LinkedHashMap<>();
+                for (SeatVO seat : rawSeats) {
+                    String key = seat.getId() + "-" + seat.getSeatRow() + "-" + seat.getSeatColumn();
+                    uniqueSeatsMap.put(key, seat);
+                }
+
+                cabin.setSeats(new ArrayList<>(uniqueSeatsMap.values()));
             }
-            return new ResponseVO<>(new DataVO<>(cabins), new MessageResponseVO("Cabinas recuperadas con éxito.", 200, LocalDateTime.now()));
+
+
+            Map<String, CabinFlightDetailsVO> uniqueCabinsMap = new LinkedHashMap<>();
+            for (CabinFlightDetailsVO cabin : cabins) {
+                uniqueCabinsMap.put(String.valueOf(cabin.getSeatClass()), cabin);
+            }
+
+            List<CabinFlightDetailsVO> uniqueCabins = new ArrayList<>(uniqueCabinsMap.values());
+
+            // Ordenar cabinas por seatClass
+            uniqueCabins.sort(Comparator.comparing(CabinFlightDetailsVO::getSeatClass));
+
+            return new ResponseVO<>(new DataVO<>(uniqueCabins), new MessageResponseVO("Cabinas recuperadas con éxito.", 200, LocalDateTime.now()));
         } catch (Exception e) {
             System.out.println("getCabinsForFlightByCode: " + e.getMessage());
             return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Error al recuperar las cabinas", 404, LocalDateTime.now()));
         }
     }
+
 
     /**
      * Permite comprar tickets de vuelo, reservando los asientos seleccionados.
@@ -141,14 +160,17 @@ public class FlightsService {
             orderFlightRepository.save(of);
 
             for (FlightPurchaseVO purchase : flightPurchaseDTO) {
-                FlightSeatStatus flightSeatStatus = flightSeatStatusRepository.findSeatByFlightCodeAndRowAndColumn(flightCode, purchase.getSeatRow(), purchase.getSeatColumn(), purchase.getSeatClass())
-                        .orElseThrow(() -> new RuntimeException("Asiento no encontrado"));
-                if (seatBookingRepository.existsByFlightSeatStatusAndEmailAndNifAndPhone(
-                        flightSeatStatus, purchase.getEmail(), purchase.getNif(), purchase.getPhone())) {
+                FlightSeatStatus flightSeatStatus = flightSeatStatusRepository.findSeatByFlightCodeAndRowAndColumn(flightCode, purchase.getSeatRow(), purchase.getSeatColumn(), purchase.getSeatClass()).orElseThrow(() -> new RuntimeException("Asiento no encontrado"));
+                System.out.println(flightSeatStatus + " - ");
+                if (seatBookingRepository.existsByFlightSeatStatusAndEmailAndNifAndPhone(flightSeatStatus, purchase.getEmail(), purchase.getNif(), purchase.getPhone())) {
                     return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Ya existe una reserva con estos datos en el mismo vuelo.", 400, LocalDateTime.now()));
+                }
+                if (!flightSeatStatus.getState()) {
+                    return new ResponseVO<>(new DataVO<>(), new MessageResponseVO("Asiento no encontrado", 404, LocalDateTime.now()));
                 }
                 flightSeatStatus.setState(false);
                 flightSeatStatusRepository.save(flightSeatStatus);
+                System.out.println(flightSeatStatus);
                 SeatBooking seatBooking = new SeatBooking();
                 seatBooking.setName(purchase.getName());
                 seatBooking.setSurnames(purchase.getSurnames());
@@ -187,9 +209,7 @@ public class FlightsService {
         FlightSeatStatus firstSeatStatus = null;
 
         for (FlightPurchaseVO purchase : flightPurchaseDTO) {
-            FlightSeatStatus flightSeatStatus = flightSeatStatusRepository.findSeatByFlightCodeAndRowAndColumn(
-                            flightCode, purchase.getSeatRow(), purchase.getSeatColumn(), purchase.getSeatClass())
-                    .orElseThrow(() -> new RuntimeException("Asiento no encontrado"));
+            FlightSeatStatus flightSeatStatus = flightSeatStatusRepository.findSeatByFlightCodeAndRowAndColumn(flightCode, purchase.getSeatRow(), purchase.getSeatColumn(), purchase.getSeatClass()).orElseThrow(() -> new RuntimeException("Asiento no encontrado"));
             totalAmount += flightSeatStatus.getPrice();
 
             if (firstSeatStatus == null) {
@@ -205,49 +225,16 @@ public class FlightsService {
 
         List<Map<String, Object>> passengers = new ArrayList<>();
         for (FlightPurchaseVO passenger : flightPurchaseDTO) {
-            Map<String, Object> passengerData = Map.of(
-                    "name", passenger.getName(),
-                    "surnames", passenger.getSurnames(),
-                    "email", passenger.getEmail(),
-                    "nif", passenger.getNif(),
-                    "phone", passenger.getPhone(),
-                    "seatRow", passenger.getSeatRow(),
-                    "seatColumn", passenger.getSeatColumn(),
-                    "seatClass", passenger.getSeatClass(),
-                    "basePrice", flightSeatStatusRepository.findSeatByFlightCodeAndRowAndColumn(
-                                    flightCode, passenger.getSeatRow(), passenger.getSeatColumn(), passenger.getSeatClass())
-                            .orElseThrow(() -> new RuntimeException("Asiento no encontrado")).getPrice()
-            );
+            Map<String, Object> passengerData = Map.of("name", passenger.getName(), "surnames", passenger.getSurnames(), "email", passenger.getEmail(), "nif", passenger.getNif(), "phone", passenger.getPhone(), "seatRow", passenger.getSeatRow(), "seatColumn", passenger.getSeatColumn(), "seatClass", passenger.getSeatClass(), "basePrice", flightSeatStatusRepository.findSeatByFlightCodeAndRowAndColumn(flightCode, passenger.getSeatRow(), passenger.getSeatColumn(), passenger.getSeatClass()).orElseThrow(() -> new RuntimeException("Asiento no encontrado")).getPrice());
             passengers.add(passengerData);
         }
-        context.setVariable("invoice", Map.of(
-                "number", generateNumberOfBill(),
-                "date", LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy, HH:mm")),
-                "passengers", passengers
-        ));
+        context.setVariable("invoice", Map.of("number", generateNumberOfBill(), "date", LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy, HH:mm")), "passengers", passengers));
 
-        context.setVariable("flight", Map.of(
-                "code", firstSeatStatus.getFlight().getCode(),
-                "airline", firstSeatStatus.getFlight().getAirline().getName(),
-                "originCity", firstSeatStatus.getFlight().getDepartureAirport().getCity().getName(),
-                "originAirport", firstSeatStatus.getFlight().getDepartureAirport().getName(),
-                "destinationCity", firstSeatStatus.getFlight().getArrivalAirport().getCity().getName(),
-                "destinationAirport", firstSeatStatus.getFlight().getArrivalAirport().getName(),
-                "departure", firstSeatStatus.getFlight().getDateTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy, HH:mm")),
-                "arrival", firstSeatStatus.getFlight().getDateTimeArrival().format(DateTimeFormatter.ofPattern("dd-MM-yyyy, HH:mm"))
-        ));
+        context.setVariable("flight", Map.of("code", firstSeatStatus.getFlight().getCode(), "airline", firstSeatStatus.getFlight().getAirline().getName(), "originCity", firstSeatStatus.getFlight().getDepartureAirport().getCity().getName(), "originAirport", firstSeatStatus.getFlight().getDepartureAirport().getName(), "destinationCity", firstSeatStatus.getFlight().getArrivalAirport().getCity().getName(), "destinationAirport", firstSeatStatus.getFlight().getArrivalAirport().getName(), "departure", firstSeatStatus.getFlight().getDateTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy, HH:mm")), "arrival", firstSeatStatus.getFlight().getDateTimeArrival().format(DateTimeFormatter.ofPattern("dd-MM-yyyy, HH:mm"))));
 
-        context.setVariable("order", Map.of(
-                "code", orderFlight.getCode(),
-                "status", orderFlight.getStatus(),
-                "basePrice", totalAmount,
-                "discount", orderFlight.getDiscount(),
-                "totalPrice", orderFlight.getAmount()
-        ));
+        context.setVariable("order", Map.of("code", orderFlight.getCode(), "status", orderFlight.getStatus(), "basePrice", totalAmount, "discount", orderFlight.getDiscount(), "totalPrice", orderFlight.getAmount()));
 
-        return language != null && language.equalsIgnoreCase("es")
-                ? templateEngine.process("invoice-template", context)
-                : templateEngine.process("invoice-template-en", context);
+        return language != null && language.equalsIgnoreCase("es") ? templateEngine.process("invoice-template", context) : templateEngine.process("invoice-template-en", context);
     }
 
 
@@ -278,15 +265,9 @@ public class FlightsService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
             helper.setTo(recipientEmail);
-            helper.setSubject(language != null && language.equalsIgnoreCase("es")
-                    ? "Factura de compra - Pedido " + orderCode
-                    : "Purchase Invoice - Order " + orderCode);
-            helper.setText(language != null && language.equalsIgnoreCase("es")
-                    ? "Adjuntamos la factura de su compra. ¡Gracias por confiar en nosotros!"
-                    : "We have attached your purchase invoice. Thank you for trusting us!");
-            helper.addAttachment((language != null && language.equalsIgnoreCase("es")
-                    ? "Factura_"
-                    : "Invoice_") + orderCode + ".pdf", new ByteArrayDataSource(pdf.toByteArray(), "application/pdf"));
+            helper.setSubject(language != null && language.equalsIgnoreCase("es") ? "Factura de compra - Pedido " + orderCode : "Purchase Invoice - Order " + orderCode);
+            helper.setText(language != null && language.equalsIgnoreCase("es") ? "Adjuntamos la factura de su compra. ¡Gracias por confiar en nosotros!" : "We have attached your purchase invoice. Thank you for trusting us!");
+            helper.addAttachment((language != null && language.equalsIgnoreCase("es") ? "Factura_" : "Invoice_") + orderCode + ".pdf", new ByteArrayDataSource(pdf.toByteArray(), "application/pdf"));
             mailSender.send(message);
         } catch (Exception e) {
             System.out.println("Error al enviar el correo: " + e.getMessage());

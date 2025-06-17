@@ -10,17 +10,13 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableScheduling
 @SpringBootApplication
-@EntityScan("com.example.skystayback.models")
-@EnableJpaRepositories("com.example.skystayback.repositories")
 public class SkyStayBackApplication {
 
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(SkyStayBackApplication.class);
 
         app.addInitializers(applicationContext -> {
-            ConfigurableEnvironment env = applicationContext.getEnvironment();
-            String activeProfile = env.getProperty("spring.profiles.active", "default");
-            if ("dev".equals(activeProfile) && new java.io.File(".env").exists()) {
+            if (new java.io.File(".env").exists()) {
                 Dotenv dotenv = Dotenv.load();
                 setIfPresent(dotenv, "DB_HOST");
                 setIfPresent(dotenv, "DB_PORT");
@@ -49,5 +45,4 @@ public class SkyStayBackApplication {
             System.setProperty(key, value);
         }
     }
-
 }
