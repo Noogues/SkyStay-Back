@@ -31,6 +31,7 @@ public class SkyStayBackApplication {
                 setIfPresent(dotenv, "EM_PORT");
                 setIfPresent(dotenv, "EM_USERNAME");
                 setIfPresent(dotenv, "EM_PASSWORD");
+                setIfPresent(dotenv, "PORT");
             }
         });
 
