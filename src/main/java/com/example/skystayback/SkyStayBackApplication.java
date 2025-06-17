@@ -32,6 +32,11 @@ public class SkyStayBackApplication {
                 setIfPresent(dotenv, "EM_USERNAME");
                 setIfPresent(dotenv, "EM_PASSWORD");
                 setIfPresent(dotenv, "PORT");
+
+                String port = dotenv.get("PORT");
+                if (port != null) {
+                    System.setProperty("server.port", port);
+                }
             }
         });
 
