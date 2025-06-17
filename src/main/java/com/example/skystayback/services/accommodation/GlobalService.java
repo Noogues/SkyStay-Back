@@ -294,14 +294,14 @@ public class GlobalService {
             List<Room> allRooms = roomRepository.findAllRoomsByRoomConfigurationId(selection.getRoomConfigId());
             List<Room> freeRooms = allRooms.stream().limit(selection.getQty()).toList();
             
-            if (freeRooms.size() < selection.getQty()) {
-                return ResponseVO.<Void>builder()
-                    .messages(new MessageResponseVO("No hay suficientes habitaciones libres para la configuración " + selection.getRoomConfigId(), 400, LocalDateTime.now()))
-                    .build();
-            }
+//            if (freeRooms.size() < selection.getQty()) {
+//                return ResponseVO.<Void>builder()
+//                    .messages(new MessageResponseVO("No hay suficientes habitaciones libres para la configuración " + selection.getRoomConfigId(), 400, LocalDateTime.now()))
+//                    .build();
+//            }
 
             for (int i = 0; i < selection.getQty(); i++) {
-                Room room = freeRooms.get(i);
+                Room room = allRooms.get(i);
                 RoomBooking booking = new RoomBooking();
                 booking.setRoom(room);
                 booking.setUser(user);

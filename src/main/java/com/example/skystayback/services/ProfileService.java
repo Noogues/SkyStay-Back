@@ -420,13 +420,98 @@ public class ProfileService {
     }
 
     private ReviewDto createAccommodationReview(User user, CreateReviewDto createReviewDto) {
-        // Implementar creación de reseña de alojamiento
-        return null;
+        // Primero intentar buscar un hotel con ese código
+        Long hotelId = profileRepository.findHotelIdByCode(createReviewDto.getEntityCode());
+        if (hotelId != null) {
+            // Es un hotel
+            // Verificar si el usuario ha reservado este hotel
+            boolean hasBooking = profileRepository.hasUserBookedHotel(user.getId(), hotelId);
+            if (!hasBooking) {
+                throw new RuntimeException("No puedes reseñar un hotel que no has reservado");
+            }
+
+            // Verificar si ya existe una reseña
+            boolean hasReview = profileRepository.hasUserReviewedHotel(user.getId(), hotelId);
+            if (hasReview) {
+                throw new RuntimeException("Ya has reseñado este hotel");
+            }
+
+            // Crear reseña
+            Long reviewId = profileRepository.createHotelReview(
+                    user.getId(),
+                    hotelId,
+                    createReviewDto.getRating(),
+                    createReviewDto.getTitle(),
+                    createReviewDto.getComment()
+            );
+
+            // Recuperar la reseña creada
+            Object[] reviewData = profileRepository.getHotelReviewById(reviewId);
+            return mapToHotelReviewDto(reviewData);
+        } else {
+            // Intentar buscar un apartamento con ese código
+            Long apartmentId = profileRepository.findApartmentIdByCode(createReviewDto.getEntityCode());
+            if (apartmentId != null) {
+                // Es un apartamento
+                // Verificar si el usuario ha reservado este apartamento
+                boolean hasBooking = profileRepository.hasUserBookedApartment(user.getId(), apartmentId);
+                if (!hasBooking) {
+                    throw new RuntimeException("No puedes reseñar un apartamento que no has reservado");
+                }
+
+                // Verificar si ya existe una reseña
+                boolean hasReview = profileRepository.hasUserReviewedApartment(user.getId(), apartmentId);
+                if (hasReview) {
+                    throw new RuntimeException("Ya has reseñado este apartamento");
+                }
+
+                // Crear reseña
+                Long reviewId = profileRepository.createApartmentReview(
+                        user.getId(),
+                        apartmentId,
+                        createReviewDto.getRating(),
+                        createReviewDto.getTitle(),
+                        createReviewDto.getComment()
+                );
+
+                // Recuperar la reseña creada
+                Object[] reviewData = profileRepository.getApartmentReviewById(reviewId);
+                return mapToApartmentReviewDto(reviewData);
+            } else {
+                throw new RuntimeException("Alojamiento no encontrado");
+            }
+        }
     }
 
     private ReviewDto createAirlineReview(User user, CreateReviewDto createReviewDto) {
-        // Implementar creación de reseña de aerolínea
-        return null;
+        // Buscar aerolínea por código
+        Long airlineId = profileRepository.findAirlineIdByCode(createReviewDto.getEntityCode());
+        if (airlineId == null) {
+            throw new RuntimeException("Aerolínea no encontrada");
+        }
+
+        // Verificar si el usuario ha volado con esta aerolínea
+        boolean hasFlown = profileRepository.hasUserFlownWithAirline(user.getId(), airlineId);
+        if (!hasFlown) {
+            throw new RuntimeException("No puedes reseñar una aerolínea con la que no has volado");
+        }
+
+        // Verificar si ya existe una reseña
+        boolean hasReview = profileRepository.hasUserReviewedAirline(user.getId(), airlineId);
+        if (hasReview) {
+            throw new RuntimeException("Ya has reseñado esta aerolínea");
+        }
+
+        // Crear reseña (las aerolíneas solo tienen rating, sin título ni comentario)
+        Long reviewId = profileRepository.createAirlineReview(
+                user.getId(),
+                airlineId,
+                createReviewDto.getRating()
+        );
+
+        // Recuperar la reseña creada
+        Object[] reviewData = profileRepository.getAirlineReviewById(reviewId);
+        return mapToAirlineReviewDto(reviewData);
     }
 
     private FavoriteDto mapToHotelFavoriteDto(Object[] row) {
@@ -434,6 +519,7 @@ public class ProfileService {
                 .code((String) row[0])
                 .name((String) row[1])
                 .stars(((Number) row[2]).intValue())
+                .mainImage((String) row[6])
                 .description((String) row[3])
                 .cityName((String) row[4])
                 .minPrice(row[5] != null ? ((Number) row[5]).doubleValue() : null)
@@ -446,6 +532,7 @@ public class ProfileService {
                 .code((String) row[0])
                 .name((String) row[1])
                 .stars(((Number) row[2]).intValue())
+                .mainImage((String) row[6])
                 .description((String) row[3])
                 .cityName((String) row[4])
                 .minPrice(row[5] != null ? ((Number) row[5]).doubleValue() : null)

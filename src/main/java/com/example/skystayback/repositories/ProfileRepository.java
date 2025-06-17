@@ -62,24 +62,22 @@ public interface ProfileRepository extends JpaRepository<User, Long> {
     // ========================
 
     @Query(value = """
-        SELECT rb.id, rb.start_date, rb.end_date, rb.status,
-               h.name, h.code, c.name as city_name,
-               oh.amount, r.room_number,
-               rch.price, rc.room_type
-        FROM room_booking rb
-        JOIN room r ON rb.room_id = r.id
-        JOIN room_configuration_hotel rch ON r.room_configuration_hotel_id = rch.id
-        JOIN room_configuration rc ON rch.room_configuration_id = rc.id
-        JOIN hotel h ON rch.hotel_id = h.id
-        JOIN city c ON h.city_id = c.id
-        LEFT JOIN order_hotel oh ON oh.room_booking_id = rb.id
-        WHERE rb.user_id = :userId
-        ORDER BY rb.start_date DESC
-        LIMIT :size OFFSET :offset
-        """, nativeQuery = true)
+SELECT rb.id, rb.start_date, rb.end_date, rb.status,
+       h.name, h.code, c.name as city_name,
+       oh.amount, r.room_number,
+       rch.price, rc.room_type
+FROM room_booking rb
+         INNER JOIN room r ON rb.room_id = r.id
+         INNER JOIN room_configuration_hotel rch ON r.room_configuration_hotel_id = rch.id
+         INNER JOIN room_configuration rc ON rch.room_configuration_id = rc.id
+         INNER JOIN hotel h ON rch.hotel_id = h.id
+         INNER JOIN city c ON h.city_id = c.id
+         LEFT JOIN order_hotel oh ON oh.room_booking_id = rb.id
+WHERE rb.user_id = :userId
+ORDER BY rb.start_date DESC
+LIMIT :size OFFSET :offset
+""", nativeQuery = true)
     List<Object[]> getHotelBookingsByUserId(@Param("userId") Long userId, @Param("offset") int offset, @Param("size") int size);
-
-    // ========================
     // RESERVAS - APARTAMENTOS
     // ========================
 
@@ -192,7 +190,9 @@ public interface ProfileRepository extends JpaRepository<User, Long> {
 
     @Query(value = """
 SELECT h.code, h.name, h.stars, h.description,
-       c.name as city_name, MIN(rch.price) as price
+       c.name as city_name, MIN(rch.price) as price,
+       (SELECT i.url FROM hotel_image hi JOIN image i ON hi.image_id = i.id 
+        WHERE hi.hotel_id = h.id LIMIT 1) as image_url
 FROM favourite_hotel fh
 JOIN hotel h ON fh.hotel_id = h.id
 JOIN city c ON h.city_id = c.id
@@ -205,7 +205,9 @@ ORDER BY MAX(fh.id) DESC
 
     @Query(value = """
 SELECT a.code, a.name, a.stars, a.description,
-       c.name as city_name, MIN(rca.price) as price
+       c.name as city_name, MIN(rca.price) as price,
+       (SELECT i.url FROM apartment_image ai JOIN image i ON ai.image_id = i.id 
+        WHERE ai.apartment_id = a.id LIMIT 1) as image_url
 FROM favourite_apartment fa
 JOIN apartment a ON fa.apartment_id = a.id
 JOIN city c ON a.city_id = c.id
@@ -237,4 +239,80 @@ ORDER BY MAX(fa.id) DESC
         WHERE fa.user_id = :userId AND a.code = :accommodationCode
         """, nativeQuery = true)
     void removeApartmentFavorite(@Param("userId") Long userId, @Param("accommodationCode") String accommodationCode);
+
+    /// Métodos para buscar entidades por código
+    @Query("SELECT h.id FROM Hotel h WHERE h.code = :code")
+    Long findHotelIdByCode(@Param("code") String code);
+
+    @Query("SELECT a.id FROM Apartment a WHERE a.code = :code")
+    Long findApartmentIdByCode(@Param("code") String code);
+
+    @Query("SELECT a.id FROM Airline a WHERE a.code = :code")
+    Long findAirlineIdByCode(@Param("code") String code);
+
+    // Métodos para verificar si el usuario ha reservado/usado el servicio
+    @Query(value = "SELECT COUNT(*) > 0 FROM room_booking rb JOIN room r ON rb.room_id = r.id JOIN room_configuration_hotel rch ON r.room_configuration_hotel_id = rch.id WHERE rb.user_id = :userId AND rch.hotel_id = :hotelId", nativeQuery = true)
+    boolean hasUserBookedHotel(@Param("userId") Long userId, @Param("hotelId") Long hotelId);
+
+    @Query(value = "SELECT COUNT(*) > 0 FROM room_booking_apartment rba JOIN room_apartment ra ON rba.room_apartment_id = ra.id JOIN room_configuration_apartment rca ON ra.room_configuration_apartment_id = rca.id WHERE rba.user_id = :userId AND rca.apartment_id = :apartmentId", nativeQuery = true)
+    boolean hasUserBookedApartment(@Param("userId") Long userId, @Param("apartmentId") Long apartmentId);
+
+    @Query(value = "SELECT COUNT(*) > 0 FROM seatbooking sb JOIN flight_seat_status fss ON sb.flight_seat_status_id = fss.id JOIN flight f ON fss.flight_id = f.id WHERE sb.user_id = :userId AND f.airline_id = :airlineId", nativeQuery = true)
+    boolean hasUserFlownWithAirline(@Param("userId") Long userId, @Param("airlineId") Long airlineId);
+
+    // Métodos para verificar si ya existe una reseña
+    @Query("SELECT COUNT(hr) > 0 FROM HotelRating hr WHERE hr.user.id = :userId AND hr.hotel.id = :hotelId")
+    boolean hasUserReviewedHotel(@Param("userId") Long userId, @Param("hotelId") Long hotelId);
+
+    @Query("SELECT COUNT(ar) > 0 FROM ApartmentRating ar WHERE ar.user.id = :userId AND ar.apartment.id = :apartmentId")
+    boolean hasUserReviewedApartment(@Param("userId") Long userId, @Param("apartmentId") Long apartmentId);
+
+    @Query("SELECT COUNT(ar) > 0 FROM AirlineRating ar WHERE ar.user.id = :userId AND ar.airline.id = :airlineId")
+    boolean hasUserReviewedAirline(@Param("userId") Long userId, @Param("airlineId") Long airlineId);
+
+    // Métodos para crear reseñas
+    @Modifying
+    @Transactional
+    @Query(value = "INSERT INTO hotel_rating (user_id, hotel_id, rating, title, comment, created_at) VALUES (:userId, :hotelId, :rating, :title, :comment, NOW()); SELECT LAST_INSERT_ID();", nativeQuery = true)
+    Long createHotelReview(@Param("userId") Long userId, @Param("hotelId") Long hotelId, @Param("rating") Float rating, @Param("title") String title, @Param("comment") String comment);
+
+    @Modifying
+    @Transactional
+    @Query(value = "INSERT INTO apartment_rating (user_id, apartment_id, rating, title, comment, created_at) VALUES (:userId, :apartmentId, :rating, :title, :comment, NOW()); SELECT LAST_INSERT_ID();", nativeQuery = true)
+    Long createApartmentReview(@Param("userId") Long userId, @Param("apartmentId") Long apartmentId, @Param("rating") Float rating, @Param("title") String title, @Param("comment") String comment);
+
+    @Modifying
+    @Transactional
+    @Query(value = "INSERT INTO airline_rating (user_id, airline_id, rating) VALUES (:userId, :airlineId, :rating); SELECT LAST_INSERT_ID();", nativeQuery = true)
+    Long createAirlineReview(@Param("userId") Long userId, @Param("airlineId") Long airlineId, @Param("rating") Float rating);
+
+    // Métodos para obtener reseñas por ID
+    @Query(value = """
+    SELECT hr.id, hr.rating, hr.title, hr.comment, hr.created_at,
+           h.name, h.code, c.name as city_name
+    FROM hotel_rating hr
+    JOIN hotel h ON hr.hotel_id = h.id
+    JOIN city c ON h.city_id = c.id
+    WHERE hr.id = :reviewId
+    """, nativeQuery = true)
+    Object[] getHotelReviewById(@Param("reviewId") Long reviewId);
+
+    @Query(value = """
+    SELECT ar.id, ar.rating, ar.title, ar.comment, ar.created_at,
+           a.name, a.code, c.name as city_name
+    FROM apartment_rating ar
+    JOIN apartment a ON ar.apartment_id = a.id
+    JOIN city c ON a.city_id = c.id
+    WHERE ar.id = :reviewId
+    """, nativeQuery = true)
+    Object[] getApartmentReviewById(@Param("reviewId") Long reviewId);
+
+    @Query(value = """
+    SELECT alr.id, alr.rating, al.name, al.code
+    FROM airline_rating alr
+    JOIN airline al ON alr.airline_id = al.id
+    WHERE alr.id = :reviewId
+    """, nativeQuery = true)
+    Object[] getAirlineReviewById(@Param("reviewId") Long reviewId);
+
 }

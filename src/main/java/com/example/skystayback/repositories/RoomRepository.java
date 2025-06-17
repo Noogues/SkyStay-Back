@@ -29,12 +29,11 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     List<RoomVO> findAllRoomsByHotelCodeAndRoomConfigurationId(@Param("roomConfigurationId") Long roomConfigurationId);
 
     @Query(value = """
-             SELECT r
-             FROM RoomConfiguration rc
-             JOIN RoomConfigurationHotel rch ON rch.roomConfiguration.id = rc.id
-             LEFT JOIN Room r ON r.roomConfiguration.id = rch.id
-             WHERE rc.id = :roomConfigurationId
-            """)
+    SELECT r.*
+    FROM room r
+    JOIN room_configuration_hotel rch ON r.room_configuration_hotel_id = rch.id
+    WHERE rch.id = :roomConfigurationId
+    """, nativeQuery = true)
     List<Room> findAllRoomsByRoomConfigurationId(@Param("roomConfigurationId") Long roomConfigurationId);
 
 }
