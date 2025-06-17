@@ -107,7 +107,7 @@ public class AparmentAdministrationService {
      * @param form Objeto que contiene la información de la imagen a añadir.
      * @return Un objeto ResponseVO que indica el resultado de la operación.
      */
-    public ResponseVO<Void> addApartmentImage(AddImageVO form) {
+    public ResponseVO<Void>addApartmentImage(AddImageVO form) {
         try {
             Apartment apartment = apartmentRepository.findByCode(form.getCode()).orElseThrow(() -> new IllegalArgumentException("No se encontró el avión con el código proporcionado"));
 
