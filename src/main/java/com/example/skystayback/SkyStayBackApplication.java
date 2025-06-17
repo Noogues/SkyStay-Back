@@ -20,7 +20,7 @@ public class SkyStayBackApplication {
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(SkyStayBackApplication.class);
 
-        app.addInitializers((ApplicationContextInitializer<ConfigurableApplicationContext>) applicationContext -> {
+        app.addInitializers(applicationContext -> {
             ConfigurableEnvironment env = applicationContext.getEnvironment();
             String activeProfile = env.getProperty("spring.profiles.active", "default");
             if ("dev".equals(activeProfile) && new java.io.File(".env").exists()) {
@@ -34,6 +34,7 @@ public class SkyStayBackApplication {
                 setIfPresent(dotenv, "EM_PORT");
                 setIfPresent(dotenv, "EM_USERNAME");
                 setIfPresent(dotenv, "EM_PASSWORD");
+                setIfPresent(dotenv, "PORT");
             }
         });
 
